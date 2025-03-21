@@ -2,6 +2,7 @@
 角色模型
  */
 import mongoose from "mongoose";
+// 引入计数器
 import { getNextSequence } from "./counter";
 
 // 定义角色模型的类型
@@ -36,6 +37,7 @@ roleSchema.pre("save", async function (next) {
       throw error
     };
   }
+  next();
 })
 
 // 创建角色模型

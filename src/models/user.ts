@@ -10,7 +10,7 @@ export interface IUser extends mongoose.Document {
   email: string;
   createTime: Date;
   updateTime: Date;
-  role?: string;
+  role?: string[];
   avatar?: string;
   comparePassword: (password: string) => Promise<boolean>; // 密码校验函数
 }

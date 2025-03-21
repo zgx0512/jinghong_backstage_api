@@ -11,6 +11,7 @@ import cors from "cors";
 // 引入路由文件
 import userRouter from "./router/user";
 import roleRouter from "./router/role";
+import menuRouter from "./router/menu";
 import { Response, Request, NextFunction } from "express";
 import { auth } from "./utils/auth";
 import { checkTokenBlacklist } from "./utils/checkBlacklist";
@@ -32,6 +33,7 @@ app.use(cors());
 // 注册路由
 app.use("/api", userRouter);
 app.use("/api", roleRouter);
+app.use("/api", menuRouter);
 
 // 测试路由
 app.get("/userList", (req: Request, res: Response) => {
