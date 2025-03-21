@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "es2017",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": "./src",           // 添加：设置基础路径
+    "paths": {
+      "@/*": ["*"],
+      "@handlers/*": ["route-handle/*"],
+      "@routes/*": ["router/*"]
+    },
+    "typeRoots": [               // 添加：类型声明文件路径
+      "./node_modules/@types",
+      "./src/types"
+    ],
+    "resolveJsonModule": true    // 添加：允许导入 json 文件
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
