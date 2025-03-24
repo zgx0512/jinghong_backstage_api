@@ -9,52 +9,6 @@ import { User } from "@/models/user";
 import jwt from "jsonwebtoken";
 // 引入redis
 import redisClient from "@/config/redis";
-
-// 新增用户
-export const handleAddUser = async (
-  req: Request,
-  res: Response,
-  next: Function
-) => {
-  try {
-    // 处理新增用户逻辑
-    const errors = validationResult(req); // 验证数据
-    if (!errors.isEmpty()) {
-      // 错误数据列表不为空
-      res.status(422).send({
-        code: 422,
-        message: errors.array()[0].msg,
-      });
-      return;
-    }
-
-    const { username, password, email } = req.body;
-    // 检查用户是否已存在
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      res.status(409).send({
-        code: 409,
-        message: "邮箱已存在",
-      });
-      return;
-    }
-    // 邮箱不存在，将当前注册用户存入User集合中
-    const user = await User.create({
-      username,
-      password,
-      email,
-    });
-    res.send({
-      code: 200,
-      message: "注册成功",
-      data: null,
-    });
-  } catch (error) {
-    // 提交给全局错误处理中间件
-    next(error);
-  }
-};
-
 // 生成token的方法
 const generateToken = (userId: number, username: string): string => {
   return jwt.sign({ userId, username }, process.env.JWT_SECRET as string, {
@@ -166,6 +120,123 @@ export const handleGetUser = async (
       code: 200,
       data: userInfoData,
       message: "获取用户信息成功",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 获取用户列表的回调
+export const handleGetUserList = async (
+  req: Request,
+  res: Response,
+  next: Function
+) => {
+  // 获取用户列表
+  try {
+    const { page, pageSize } = req.query;
+    // 分页查询
+    const users = await User.find()
+      .skip((Number(page) - 1) * Number(pageSize))
+      .limit(Number(pageSize));
+    // 获取总的用户数量
+    const total = await User.countDocuments();
+    // 筛选出需要的数据
+    const usersList = users.map((user) => {
+      return {
+        userId: user.userId,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        createTime: user.createTime,
+        updateTime: user.updateTime,
+      };
+    });
+    res.send({
+      code: 200,
+      data: {
+        page: Number(page),
+        pageSize: Number(pageSize),
+        usersList,
+        total,
+      },
+      message: "获取用户列表成功",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 新增用户
+export const handleAddUser = async (
+  req: Request,
+  res: Response,
+  next: Function
+) => {
+  try {
+    // 处理新增用户逻辑
+    const errors = validationResult(req); // 验证数据
+    if (!errors.isEmpty()) {
+      // 错误数据列表不为空
+      res.send({
+        code: 422,
+        message: errors.array()[0].msg,
+      });
+      return;
+    }
+
+    const { username, password, email } = req.body;
+    // 检查用户是否已存在
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      res.send({
+        code: 409,
+        message: "邮箱已存在",
+      });
+      return;
+    }
+    // 邮箱不存在，将当前注册用户存入User集合中
+    const user = await User.create({
+      username,
+      password,
+      email,
+    });
+    res.send({
+      code: 200,
+      message: "添加用户成功",
+      data: null,
+    });
+  } catch (error) {
+    // 提交给全局错误处理中间件
+    next(error);
+  }
+};
+
+// 更新用户信息的回调
+export const handleUpdateUser = async (
+  req: Request,
+  res: Response,
+  next: Function
+) => {
+  // 超级管理员账号——super-admin，2324461523@qq.com不让修改
+  const { userId, username, email } = req.body;
+  // 找出超级管理员的userId
+  const superAdmin = await User.findOne({ email: "2324461523@qq.com" });
+  try {
+    if (userId === superAdmin!.userId) {
+      res.send({
+        code: 403,
+        message: "超级管理员账号不允许修改",
+        data: null,
+      });
+      return;
+    }
+    // 更新用户信息
+    await User.updateOne({ userId }, { username, email });
+    res.send({
+      code: 200,
+      message: "更新用户信息成功",
+      data: null,
     });
   } catch (error) {
     next(error);
