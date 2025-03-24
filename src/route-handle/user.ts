@@ -130,17 +130,23 @@ export const handleGetUser = async (
 export const handleGetUserList = async (
   req: Request,
   res: Response,
-  next: Function
+  next: NextFunction
 ) => {
   // 获取用户列表
   try {
-    const { page, pageSize } = req.query;
+    const { page, pageSize, username } = req.query;
+    // 构建查询条件
+    const queryCondition = username
+      ? { username: { $regex: username, $options: "i" } }
+      : {};
+
     // 分页查询
-    const users = await User.find()
+    const users = await User.find(queryCondition)
       .skip((Number(page) - 1) * Number(pageSize))
       .limit(Number(pageSize));
-    // 获取总的用户数量
-    const total = await User.countDocuments();
+
+    // 获取符合条件的总用户数量
+    const total = await User.countDocuments(queryCondition);
     // 筛选出需要的数据
     const usersList = users.map((user) => {
       return {
@@ -171,7 +177,7 @@ export const handleGetUserList = async (
 export const handleAddUser = async (
   req: Request,
   res: Response,
-  next: Function
+  next: NextFunction
 ) => {
   try {
     // 处理新增用户逻辑
@@ -216,7 +222,7 @@ export const handleAddUser = async (
 export const handleUpdateUser = async (
   req: Request,
   res: Response,
-  next: Function
+  next: NextFunction
 ) => {
   // 超级管理员账号——super-admin，2324461523@qq.com不让修改
   const { userId, username, email } = req.body;
@@ -236,6 +242,63 @@ export const handleUpdateUser = async (
     res.send({
       code: 200,
       message: "更新用户信息成功",
+      data: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 删除用户的回调
+export const handleDeleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // 超级管理员账号——super-admin，2324461523@qq.com不让删除
+  const { userId } = req.params;
+  // 找出超级管理员的userId
+  const superAdmin = await User.findOne({ email: "2324461523@qq.com" });
+  try {
+    if (Number(userId) === superAdmin!.userId) {
+      res.send({
+        code: 403,
+        message: "超级管理员账号不允许删除",
+        data: null,
+      });
+      return;
+    }
+    // 删除用户
+    await User.deleteOne({ userId });
+    res.send({
+      code: 200,
+      message: "删除用户成功",
+      data: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 批量删除用户的回调
+export const handleBatchDeleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // 超级管理员账号——super-admin，2324461523@qq.com不让删除
+  let userIds = req.body;
+  // 找出超级管理员的userId
+  const superAdmin = await User.findOne({ email: "2324461523@qq.com" });
+  userIds = userIds.filter(
+    (userId: number) => Number(userId) !== superAdmin!.userId
+  );
+  // 批量删除用户
+  try {
+    await User.deleteMany({ userId: { $in: userIds } });
+    res.send({
+      code: 200,
+      message: "批量删除用户成功",
       data: null,
     });
   } catch (error) {

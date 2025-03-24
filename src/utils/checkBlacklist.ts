@@ -22,7 +22,6 @@ export const checkTokenBlacklist = async (
     if (token) {
       // 查找当前token是否存在黑名单中
       const isBlacklisted = await redisClient.get(`bl_${token}`);
-      console.log(isBlacklisted);
       if (isBlacklisted) {
         res.status(401).send({
           code: 401,

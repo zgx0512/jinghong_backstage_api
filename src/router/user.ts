@@ -11,6 +11,8 @@ import {
   handleGetUser,
   handleGetUserList,
   handleUpdateUser,
+  handleDeleteUser,
+  handleBatchDeleteUser,
 } from "@handlers/user";
 // 引入校验规则
 import { registerValidator } from "@/utils/userValidator";
@@ -34,6 +36,12 @@ router.post("/addUser", registerValidator, handleAddUser);
 
 // 更新用户信息
 router.put("/updateUser", registerValidator, handleUpdateUser);
+
+// 删除用户
+router.delete("/deleteUser/:userId", handleDeleteUser);
+
+// 批量删除用户
+router.delete("/batchDeleteUser", handleBatchDeleteUser)
 
 // 导出路由
 export default router;
