@@ -4,7 +4,12 @@
 
 import { Router } from "express";
 // 引入处理函数
-import { handleAddUser, handleLogin, handleLogout } from "@handlers/user";
+import {
+  handleAddUser,
+  handleLogin,
+  handleLogout,
+  handleGetUser,
+} from "@handlers/user";
 // 引入校验规则
 import { registerValidator } from "@/utils/userValidator";
 
@@ -19,5 +24,7 @@ router.post("/login", handleLogin);
 // 退出登录
 router.post("/logout", handleLogout);
 
+// 获取用户信息
+router.get("/getUserInfo", handleGetUser);
 // 导出路由
 export default router;

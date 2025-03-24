@@ -13,10 +13,24 @@ import userRouter from "./router/user";
 import roleRouter from "./router/role";
 import menuRouter from "./router/menu";
 import { Response, Request, NextFunction } from "express";
-import { auth } from "./utils/auth";
+import { auth, parseToken } from "./utils/auth";
 import { checkTokenBlacklist } from "./utils/checkBlacklist";
 
 const app = express();
+// 配置跨域中间件
+app.use(
+  cors({
+    origin: "*", // 开放所有跨域请求
+    methods: ["GET", "POST", "PUT", "DELETE"], // 允许跨域请求的方法
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "token",
+    ], // 允许跨域携带的请求头
+    exposedHeaders: ["Authorization", "token"], // 同时暴露 token 响应头
+  })
+);
 
 // 配置内置中间件
 app.use(express.json());
@@ -24,11 +38,10 @@ app.use(express.urlencoded({ extended: false }));
 
 // 配置token校验中间件
 app.use(auth);
+// 配置token解析中间件
+app.use(parseToken);
 // 配置token黑名单中间件
 app.use(checkTokenBlacklist);
-
-// 配置跨域中间件
-app.use(cors());
 
 // 注册路由
 app.use("/api", userRouter);

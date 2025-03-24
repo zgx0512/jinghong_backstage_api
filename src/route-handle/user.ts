@@ -57,11 +57,9 @@ export const handleAddUser = async (
 
 // 生成token的方法
 const generateToken = (userId: number, username: string): string => {
-  return jwt.sign(
-    { userId, username },
-    (process.env.JWT_SECRET as string),
-    { expiresIn: "7d" }
-  );
+  return jwt.sign({ userId, username }, process.env.JWT_SECRET as string, {
+    expiresIn: "7d",
+  });
 };
 
 // 登录路由的回调
@@ -76,7 +74,7 @@ export const handleLogin = async (
     // 检查用户是否存在
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(401).send({
+      res.send({
         code: 401,
         message: "邮箱或密码错误",
       });
@@ -85,7 +83,7 @@ export const handleLogin = async (
     // 用户存在，验证密码是否正确
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      res.status(401).send({
+      res.send({
         code: 401,
         message: "邮箱或密码错误",
       });
@@ -96,7 +94,7 @@ export const handleLogin = async (
     res.send({
       code: 200,
       message: "登录成功",
-      data: { token },
+      data: token,
     });
   } catch (error) {
     // 提交给全局错误处理中间件
@@ -117,12 +115,57 @@ export const handleLogout = async (
     if (token) {
       // 将token加入黑名单中
       // 格式：redis的key为bl_${token}，value为true，过期时间为7天
-      await redisClient.set(`bl_${token}`, "true", {"EX": 60 * 60 * 24 * 7});
+      await redisClient.set(`bl_${token}`, "true", { EX: 60 * 60 * 24 * 7 });
     }
     res.send({
       code: 200,
       data: null,
-      message: "退出登录成功"
+      message: "退出登录成功",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 获取用户信息的回调
+export const handleGetUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { user } = req as any;
+  try {
+    if (!user) {
+      res.send({
+        code: 401,
+        data: null,
+        message: "token已失效，请重新登录",
+      });
+      return;
+    }
+    // 根据用户id获取用户信息
+    const userInfo = await User.findOne({ userId: user.userId });
+    if (!userInfo) {
+      res.send({
+        code: 405,
+        data: null,
+        message: "用户不存在",
+      });
+      return;
+    }
+    const userInfoData = {
+      userId: userInfo.userId,
+      username: userInfo.username,
+      email: userInfo.email,
+      role: userInfo.role,
+      avatar: userInfo.avatar,
+      createTime: userInfo.createTime,
+      updateTime: userInfo.updateTime,
+    };
+    res.send({
+      code: 200,
+      data: userInfoData,
+      message: "获取用户信息成功",
     });
   } catch (error) {
     next(error);

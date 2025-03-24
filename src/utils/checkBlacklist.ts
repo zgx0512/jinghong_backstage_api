@@ -5,10 +5,14 @@ import { Request, Response, NextFunction } from "express";
 import redisClient from "@/config/redis";
 
 // 定义白名单路径
-const whiteList = ['/api/login', '/api/addUser', '/api/logout'];
+const whiteList = ["/api/login", "/api/addUser", "/api/logout"];
 
 // 验证token是否在黑名单中
-export const checkTokenBlacklist = async (req: Request, res: Response, next: NextFunction) => {
+export const checkTokenBlacklist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     if (whiteList.includes(req.path)) {
       return next();
@@ -23,8 +27,8 @@ export const checkTokenBlacklist = async (req: Request, res: Response, next: Nex
         res.status(401).send({
           code: 401,
           data: null,
-          message: "token已失效，请重新登录"
-        })
+          message: "token已失效，请重新登录",
+        });
         return;
       }
     }
