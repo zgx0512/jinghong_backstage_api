@@ -238,7 +238,10 @@ export const handleUpdateUser = async (
       return;
     }
     // 更新用户信息
-    await User.updateOne({ userId }, { username, email });
+    await User.updateOne(
+      { userId },
+      { username, email, updateTime: new Date(Date.now() + 8 * 60 * 60 * 1000) }
+    );
     res.send({
       code: 200,
       message: "更新用户信息成功",

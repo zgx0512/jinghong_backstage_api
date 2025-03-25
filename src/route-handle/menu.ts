@@ -6,8 +6,8 @@ import dayjs from "dayjs";
 // 获取菜单列表(树形结构)
 export const getMenuList = async (req: Request, res: Response) => {
   try {
-    // 获取所有菜单
-    const menus = await Menu.find().sort({ createTime: -1 });
+    // 获取所有菜单，按创建时间升序排序
+    const menus = await Menu.find().sort({ createTime: 1 });
 
     // 将菜单转换为树形结构
     const buildMenuTree: any = (parentId: number | null = null) => {
@@ -48,9 +48,46 @@ export const getMenuList = async (req: Request, res: Response) => {
   }
 };
 
+// 获取归属菜单列表
+export const getMenuListByLevel = async (req: Request, res: Response) => {
+  const { level } = req.query;
+  try {
+    // 验证菜单等级
+    if (Number(level) <= 1) {
+      res.send({
+        code: 400,
+        data: null,
+        message: "一级菜单不需要选择归属菜单",
+      });
+      return;
+    }
+    // 查询上一级菜单（等级 = 当前等级 - 1）
+    const menus = await Menu.find({ 
+      level: Number(level) - 1 
+    }).sort({ createTime: -1 });
+    // 整合要返回的数据
+    const menuList = menus.map((menu) => ({
+      id: menu.menuId,
+      menuName: menu.menuName,
+      menuPath: menu.menuPath,
+    }));
+    res.send({
+      code: 200,
+      data: menuList,
+      message: "获取菜单列表成功",
+    });
+  } catch (error) {
+    res.status(500).send({
+      code: 500,
+      data: null,
+      message: "获取菜单列表失败",
+    });
+  }
+};
+
 // 新增菜单路由
 export const addMenu = async (req: Request, res: Response) => {
-  const { menuName, parentId, menuIcon, menuPath } = req.body;
+  const { menuName, parentId, menuIcon, menuPath, level, acl } = req.body;
   try {
     const existingMenu = await Menu.findOne({
       $or: [{ menuName }, { menuPath }],
@@ -70,6 +107,8 @@ export const addMenu = async (req: Request, res: Response) => {
       parentId,
       menuIcon,
       menuPath,
+      level,
+      acl
     });
     res.send({
       code: 200,

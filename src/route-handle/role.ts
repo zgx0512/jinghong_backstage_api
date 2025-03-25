@@ -119,6 +119,7 @@ export const updateRole = async (
       { roleId: id },
       {
         roleName,
+        updateTime: new Date(Date.now() + 8 * 60 * 60 * 1000),
       }
     );
     res.send({
