@@ -8,6 +8,7 @@ specifiers:
   '@types/node': ^22.13.10
   bcryptjs: ^3.0.2
   cors: ^2.8.5
+  dayjs: ^1.11.13
   dotenv: ^16.4.7
   express: ^4.21.2
   express-jwt: ^8.5.1
@@ -25,6 +26,7 @@ dependencies:
   '@types/mongoose': 5.11.97
   bcryptjs: 3.0.2
   cors: 2.8.5
+  dayjs: 1.11.13
   dotenv: 16.4.7
   express: 4.21.2
   express-jwt: 8.5.1
@@ -428,6 +430,10 @@ packages:
   /create-require/1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
     dev: true
+
+  /dayjs/1.11.13:
+    resolution: {integrity: sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==}
+    dev: false
 
   /debug/2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
