@@ -3,13 +3,11 @@
 import { Response, Request } from "express";
 import { Menu } from "../models/menu";
 import dayjs from "dayjs";
-
 // 获取菜单列表(树形结构)
 export const getMenuList = async (req: Request, res: Response) => {
   try {
     // 获取所有菜单
     const menus = await Menu.find().sort({ createTime: -1 });
-    console.log("原始数据:", menus); // 调试用
 
     // 将菜单转换为树形结构
     const buildMenuTree: any = (parentId: number | null = null) => {
@@ -21,15 +19,20 @@ export const getMenuList = async (req: Request, res: Response) => {
           menuPath: menu.menuPath,
           menuIcon: menu.menuIcon,
           parentId: menu.parentId,
-          createTime: dayjs(menu.createTime).format("YYYY-MM-DD HH:mm:ss"),
-          updateTime: dayjs(menu.updateTime).format("YYYY-MM-DD HH:mm:ss"),
+          acl: menu.acl,
+          level: menu.level,
+          createTime: dayjs(menu.createTime)
+            .subtract(8, "hour")
+            .format("YYYY-MM-DD HH:mm:ss"),
+          updateTime: dayjs(menu.updateTime)
+            .subtract(8, "hour")
+            .format("YYYY-MM-DD HH:mm:ss"),
           children: buildMenuTree(menu.menuId),
         }));
     };
 
     // 生成树形结构
     const menuTree = buildMenuTree();
-    console.log("树形结构:", menuTree); // 调试用
 
     res.send({
       code: 200,
@@ -54,7 +57,7 @@ export const addMenu = async (req: Request, res: Response) => {
     });
     if (existingMenu) {
       // 菜单名称或路径已存在
-      res.status(409).send({
+      res.send({
         code: 409,
         data: null,
         message: "菜单名称或路径已存在",

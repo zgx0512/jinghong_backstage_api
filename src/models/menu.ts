@@ -11,9 +11,11 @@ export interface IMenu extends mongoose.Document {
   menuName: string; // 菜单名称
   menuIcon: string; // 菜单图标
   menuPath: string; // 菜单路径
+  acl: string; // 权限
   createTime: Date; // 创建时间
   updateTime: Date; // 更新时间
   parentId: number | null; // 父菜单ID
+  level: number; // 菜单层级
 }
 
 // 定义菜单模型的schema
@@ -22,6 +24,8 @@ export const MenuSchema = new mongoose.Schema({
   menuName: { type: String, required: true, unique: true },
   menuIcon: { type: String, required: true },
   menuPath: { type: String, required: true },
+  acl: { type: String, required: true },
+  level: { type: Number, required: true },
   parentId: { type: Number, ref: "Menu", required: false, default: null },
   createTime: {
     type: Date,
