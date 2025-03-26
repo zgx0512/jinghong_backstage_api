@@ -16,6 +16,8 @@ export interface IMenu extends mongoose.Document {
   updateTime: Date; // 更新时间
   parentId: number | null; // 父菜单ID
   level: number; // 菜单层级
+  isLeaf: boolean; // 是否为叶子节点
+  hasBtnsAcl: boolean; // 是否有按钮权限
 }
 
 // 定义菜单模型的schema
@@ -27,6 +29,8 @@ export const MenuSchema = new mongoose.Schema({
   acl: { type: String, required: true },
   level: { type: Number, required: true },
   parentId: { type: Number, ref: "Menu", required: false, default: null },
+  isLeaf: { type: Boolean, default: true },
+  hasBtnsAcl: { type: Boolean, default: false },
   createTime: {
     type: Date,
     default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),

@@ -21,6 +21,8 @@ export const getMenuList = async (req: Request, res: Response) => {
           parentId: menu.parentId,
           acl: menu.acl,
           level: menu.level,
+          isLeaf: menu.isLeaf,
+          hasBtnsAcl: menu.hasBtnsAcl,
           createTime: dayjs(menu.createTime)
             .subtract(8, "hour")
             .format("YYYY-MM-DD HH:mm:ss"),
@@ -61,9 +63,10 @@ export const getMenuListByLevel = async (req: Request, res: Response) => {
       });
       return;
     }
-    // 查询上一级菜单（等级 = 当前等级 - 1）
+    // 查询上一级菜单（等级 = 当前等级 - 1）, 移除掉hasBtnsAcl为true的菜单
     const menus = await Menu.find({
       level: Number(level) - 1,
+      hasBtnsAcl: { $ne: true },
     }).sort({ createTime: -1 });
     // 整合要返回的数据
     const menuList = menus.map((menu) => ({
