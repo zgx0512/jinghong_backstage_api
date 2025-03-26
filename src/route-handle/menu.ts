@@ -62,8 +62,8 @@ export const getMenuListByLevel = async (req: Request, res: Response) => {
       return;
     }
     // 查询上一级菜单（等级 = 当前等级 - 1）
-    const menus = await Menu.find({ 
-      level: Number(level) - 1 
+    const menus = await Menu.find({
+      level: Number(level) - 1,
     }).sort({ createTime: -1 });
     // 整合要返回的数据
     const menuList = menus.map((menu) => ({
@@ -108,7 +108,7 @@ export const addMenu = async (req: Request, res: Response) => {
       menuIcon,
       menuPath,
       level,
-      acl
+      acl,
     });
     res.send({
       code: 200,
@@ -117,5 +117,68 @@ export const addMenu = async (req: Request, res: Response) => {
     });
   } catch (error) {
     throw error;
+  }
+};
+
+// 更新菜单
+export const updateMenu = async (req: Request, res: Response) => {
+  const { id, menuName, parentId, menuIcon, menuPath, level, acl } = req.body;
+  try {
+    // 判断菜单名称或路径是否已存在（不包括自身）
+    const existingMenu = await Menu.findOne({
+      $or: [{ menuName }, { menuPath }],
+      menuId: { $ne: id },
+    });
+    if (existingMenu) {
+      // 菜单名称或路径已存在
+      res.send({
+        code: 409,
+        data: null,
+        message: "菜单名称或路径已存在",
+      });
+      return;
+    }
+    // 更新菜单信息
+    await Menu.updateOne(
+      { menuId: id },
+      {
+        menuName,
+        parentId,
+        menuIcon,
+        menuPath,
+        level,
+        acl,
+        updateTime: new Date(Date.now() + 8 * 60 * 60 * 1000),
+      }
+    );
+    res.send({
+      code: 200,
+      data: null,
+      message: "菜单更新成功",
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+// 删除菜单, 将对应的子菜单也一起删除
+export const deleteMenu = async (req: Request, res: Response) => {
+  const { menuId } = req.params;
+  try {
+    // 删除当前菜单及其所有子菜单
+    await Menu.deleteMany({
+      $or: [{ menuId: menuId }, { parentId: menuId }],
+    });
+    res.send({
+      code: 200,
+      data: null,
+      message: "菜单删除成功",
+    });
+  } catch (error) {
+    res.send({
+      code: 500,
+      data: null,
+      message: "菜单删除失败",
+    });
   }
 };

@@ -1,7 +1,13 @@
 /* 菜单路由 */
 
 import { Router } from "express";
-import { addMenu, getMenuList, getMenuListByLevel } from "../route-handle/menu";
+import {
+  addMenu,
+  getMenuList,
+  getMenuListByLevel,
+  updateMenu,
+  deleteMenu,
+} from "../route-handle/menu";
 
 const router = Router();
 
@@ -13,5 +19,11 @@ router.get("/getMenuByLevel", getMenuListByLevel);
 
 // 新增菜单
 router.post("/addMenu", addMenu);
+
+// 更新菜单
+router.put("/updateMenu", updateMenu);
+
+// 删除菜单
+router.delete("/deleteMenu/:menuId", deleteMenu)
 
 export default router;
