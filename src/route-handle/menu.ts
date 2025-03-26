@@ -113,6 +113,10 @@ export const addMenu = async (req: Request, res: Response) => {
       level,
       acl,
     });
+    // 如果parentId不为null, 更新parentId对应的菜单的isLeaf字段为false
+    if (parentId !== null) {
+      await Menu.updateOne({ menuId: parentId }, { isLeaf: false });
+    }
     res.send({
       code: 200,
       data: null,
@@ -168,10 +172,21 @@ export const updateMenu = async (req: Request, res: Response) => {
 export const deleteMenu = async (req: Request, res: Response) => {
   const { menuId } = req.params;
   try {
+    // 先查询要删除的菜单信息，获取其parentId
+    const menuToDelete = await Menu.findOne({ menuId });
+    const parentId = menuToDelete?.parentId;
     // 删除当前菜单及其所有子菜单
     await Menu.deleteMany({
       $or: [{ menuId: menuId }, { parentId: menuId }],
     });
+    // 如果parentId不为null, 更新parentId对应的菜单的isLeaf字段为true
+    if (parentId) {
+      const siblingCount = await Menu.countDocuments({ parentId });
+      // 如果没有其他子菜单了，将父菜单设置为叶子节点
+      if (siblingCount === 0) {
+        await Menu.updateOne({ menuId: parentId }, { isLeaf: true });
+      }
+    }
     res.send({
       code: 200,
       data: null,
