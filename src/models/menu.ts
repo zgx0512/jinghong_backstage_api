@@ -2,7 +2,7 @@
 菜单模型
  */
 import mongoose from "mongoose";
-// 引入计数器
+// 引入ID自增方法
 import { getNextSequence } from "./counter";
 
 // 定义菜单模型接口类型
@@ -21,7 +21,7 @@ export interface IMenu extends mongoose.Document {
 }
 
 // 定义菜单模型的schema
-export const MenuSchema = new mongoose.Schema({
+export const menuSchema = new mongoose.Schema<IMenu>({
   menuId: { type: Number, unique: true },
   menuName: { type: String, required: true, unique: true },
   menuIcon: { type: String, required: true },
@@ -42,7 +42,7 @@ export const MenuSchema = new mongoose.Schema({
 });
 
 // 在保存菜单时自动生成menuId
-MenuSchema.pre("save", async function (next) {
+menuSchema.pre("save", async function (next) {
   if (this.isNew) {
     try {
       this.menuId = await getNextSequence("menuId");
@@ -53,4 +53,4 @@ MenuSchema.pre("save", async function (next) {
   next();
 });
 // 定义菜单模型
-export const Menu = mongoose.model<IMenu>("Menu", MenuSchema);
+export const Menu = mongoose.model<IMenu>("Menu", menuSchema);
