@@ -12,10 +12,10 @@ interface IBtn extends mongoose.Document {
   btnId: number;
   name: string;
   acl: string;
+  btnIcon: string;
   menuId: number;
-  level: number;
-  createTime: Date;
-  updateTime: Date;
+  createTime: Date | string;
+  updateTime: Date | string;
 }
 
 // 定义按钮模型的Schema
@@ -23,8 +23,8 @@ const btnSchema = new mongoose.Schema<IBtn>({
   btnId: { type: Number, unique: true }, // id唯一
   name: { type: String, required: true }, // 按钮名称
   acl: { type: String, required: true }, // 按钮ACL
+  btnIcon: { type: String, required: false }, // 按钮图标
   menuId: { type: Number, required: true }, // 所属菜单ID
-  level: { type: Number, required: true }, // 按钮层级
   createTime: {
     type: Date,
     default: new Date(Date.now() + 8 * 60 * 60 * 1000),

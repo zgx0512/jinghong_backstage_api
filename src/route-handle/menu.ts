@@ -2,22 +2,28 @@
 
 import { Response, Request } from "express";
 import { Menu } from "../models/menu";
+// 引入button路由
+import { Btn } from "../models/btn";
 import dayjs from "dayjs";
 // 获取菜单列表(树形结构)
 export const getMenuList = async (req: Request, res: Response) => {
+  const { type } = req.query;
   try {
     // 获取所有菜单，按创建时间升序排序
     const menus = await Menu.find().sort({ createTime: 1 });
+    // 获取所有的按钮权限
+    const btns = await Btn.find();
 
     // 将菜单转换为树形结构
     const buildMenuTree: any = (parentId: number | null = null) => {
-      return menus
-        .filter((menu) => menu.parentId === parentId)
-        .map((menu) => ({
+      const menuList = menus.filter((menu) => menu.parentId === parentId);
+      const res = menuList.map((menu) => {
+        const treeNodes = {
+          type: "menu",
           id: menu.menuId,
-          menuName: menu.menuName,
-          menuPath: menu.menuPath,
-          menuIcon: menu.menuIcon,
+          name: menu.menuName,
+          path: menu.menuPath,
+          icon: menu.menuIcon,
           parentId: menu.parentId,
           acl: menu.acl,
           level: menu.level,
@@ -30,7 +36,33 @@ export const getMenuList = async (req: Request, res: Response) => {
             .subtract(8, "hour")
             .format("YYYY-MM-DD HH:mm:ss"),
           children: buildMenuTree(menu.menuId),
-        }));
+        };
+        if (type === "0") {
+          if (treeNodes.children.length === 0) {
+            // 从按钮权限列表中筛选出当前菜单的按钮权限
+            const btnList = btns.filter((btn) => btn.menuId === treeNodes.id);
+            const res = btnList.map((btn) => ({
+              type: "btn",
+              btnId: btn.btnId,
+              name: btn.name,
+              acl: btn.acl,
+              icon: btn.btnIcon,
+              parentId: btn.menuId,
+              createTime: dayjs(menu.createTime)
+                .subtract(8, "hour")
+                .format("YYYY-MM-DD HH:mm:ss"),
+              updateTime: dayjs(menu.updateTime)
+                .subtract(8, "hour")
+                .format("YYYY-MM-DD HH:mm:ss"),
+            }));
+            if (res.length > 0) {
+              treeNodes.children = res;
+            }
+          }
+        }
+        return treeNodes;
+      });
+      return res;
     };
 
     // 生成树形结构
@@ -90,10 +122,10 @@ export const getMenuListByLevel = async (req: Request, res: Response) => {
 
 // 新增菜单路由
 export const addMenu = async (req: Request, res: Response) => {
-  const { menuName, parentId, menuIcon, menuPath, level, acl } = req.body;
+  const { name, parentId, icon, path, level, acl } = req.body;
   try {
     const existingMenu = await Menu.findOne({
-      $or: [{ menuName }, { menuPath }],
+      $or: [{ menuName: name }, { menuPath: path }],
     });
     if (existingMenu) {
       // 菜单名称或路径已存在
@@ -106,10 +138,10 @@ export const addMenu = async (req: Request, res: Response) => {
     }
     // 不存在，存储到Menu模型中
     await Menu.create({
-      menuName,
+      menuName: name,
       parentId,
-      menuIcon,
-      menuPath,
+      menuIcon: icon,
+      menuPath: path,
       level,
       acl,
     });
@@ -129,11 +161,11 @@ export const addMenu = async (req: Request, res: Response) => {
 
 // 更新菜单
 export const updateMenu = async (req: Request, res: Response) => {
-  const { id, menuName, parentId, menuIcon, menuPath, level, acl } = req.body;
+  const { id, name, parentId, icon, path, level, acl } = req.body;
   try {
     // 判断菜单名称或路径是否已存在（不包括自身）
     const existingMenu = await Menu.findOne({
-      $or: [{ menuName }, { menuPath }],
+      $or: [{ menuName: name }, { menuPath: path }],
       menuId: { $ne: id },
     });
     if (existingMenu) {
@@ -149,10 +181,10 @@ export const updateMenu = async (req: Request, res: Response) => {
     await Menu.updateOne(
       { menuId: id },
       {
-        menuName,
+        menuName: name,
         parentId,
-        menuIcon,
-        menuPath,
+        menuIcon: icon,
+        menuPath: path,
         level,
         acl,
         updateTime: new Date(Date.now() + 8 * 60 * 60 * 1000),
