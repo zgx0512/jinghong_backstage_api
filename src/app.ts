@@ -14,6 +14,7 @@ import roleRouter from "./router/role";
 import menuRouter from "./router/menu";
 import btnRouter from "./router/btn";
 import classifyRouter from "./router/classify";
+import uploadRouter from "./router/upload";
 import { Response, Request, NextFunction } from "express";
 import { auth, parseToken } from "./utils/auth";
 import { checkTokenBlacklist } from "./utils/checkBlacklist";
@@ -51,14 +52,7 @@ app.use("/api", roleRouter);
 app.use("/api", menuRouter);
 app.use("/api", btnRouter);
 app.use("/api", classifyRouter);
-
-// 测试路由
-app.get("/userList", (req: Request, res: Response) => {
-  res.send({
-    code: 200,
-    data: [],
-  });
-});
+app.use("/api", uploadRouter);
 
 // 定义404中间件
 app.use((req: Request, res: Response, next: NextFunction) => {

@@ -87,7 +87,6 @@ export const getTwoClassify = async (
   try {
     // 获取二级分类
     const { parentId } = req.params;
-    console.log(parentId);
     const classifes = await Classify.find({
       parentId,
     })
