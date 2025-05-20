@@ -20,10 +20,10 @@ router.get("/getAllClassify", getAllClassify);
 router.get("/getOneClassify", getOneClassify);
 
 // 获取二级分类
-router.get("/getTwoClassify", getTwoClassify);
+router.get("/getTwoClassify/:parentId", getTwoClassify);
 
 // 获取三级分类
-router.get("/getThreeClassify", getThreeClassify);
+router.get("/getThreeClassify/:parentId", getThreeClassify);
 
 // 根据等级获取分类
 router.get("/getClassifyByLevel/:level", getClassifyByLevel);

@@ -86,7 +86,8 @@ export const getTwoClassify = async (
 ) => {
   try {
     // 获取二级分类
-    const { parentId } = req.query;
+    const { parentId } = req.params;
+    console.log(parentId);
     const classifes = await Classify.find({
       parentId,
     })
@@ -121,7 +122,7 @@ export const getThreeClassify = async (
 ) => {
   try {
     // 获取三级分类
-    const { parentId } = req.query;
+    const { parentId } = req.params;
     const classifes = await Classify.find({
       parentId,
     })
