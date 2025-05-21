@@ -17,7 +17,7 @@ export const getTrademarkList = async (
       .skip((Number(page) - 1) * Number(limit))
       .limit(Number(limit))
       .sort({
-        createdTime: 1,
+        createTime: -1,
       })
       .lean();
     const total = await Trademark.countDocuments(queryCondition);
@@ -53,7 +53,7 @@ export const getAllTrademarkList = async (
   try {
     const trademarkList = await Trademark.find()
       .sort({
-        createdTime: 1,
+        createTime: 1,
       })
       .lean();
     const list = trademarkList.map((item) => ({

@@ -11,7 +11,7 @@ export const getAllClassify = async (
   try {
     // 获取所有分类，按创建时间排序
     const classifes = await Classify.find().sort({
-      createdTime: 1,
+      createTime: 1,
     });
     // 将分类列表转换为树形结构
     const buildTree: any = (parentId: number | null = null) => {
@@ -54,7 +54,7 @@ export const getOneClassify = async (
     const classifes = await Classify.find({
       parentId: null,
     }).sort({
-      createdTime: 1,
+      createTime: 1,
     });
     const classifesData = classifes.map((classify) => ({
       name: classify.name,
@@ -91,7 +91,7 @@ export const getTwoClassify = async (
       parentId,
     })
       .sort({
-        createdTime: 1,
+        createTime: 1,
       })
       .lean();
     const classifesData = classifes.map((classify) => ({
@@ -126,7 +126,7 @@ export const getThreeClassify = async (
       parentId,
     })
       .sort({
-        createdTime: 1,
+        createTime: 1,
       })
       .lean();
     const classifesData = classifes.map((classify) => ({
@@ -161,7 +161,7 @@ export const getClassifyByLevel = async (
       level,
     })
       .sort({
-        createdTime: 1,
+        createTime: 1,
       })
       .lean();
     const classifesData = classifes.map((classify) => ({
@@ -196,7 +196,7 @@ export const getClassifyByLevelForEdit = async (
       id: { $ne: id },
     })
       .sort({
-        createdTime: 1,
+        createTime: 1,
       })
       .lean();
     const classifesData = classifes.map((classify) => ({
