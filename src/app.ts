@@ -15,6 +15,7 @@ import menuRouter from "./router/menu";
 import btnRouter from "./router/btn";
 import classifyRouter from "./router/classify";
 import uploadRouter from "./router/upload";
+import trademarkRouter from "./router/trademark";
 import { Response, Request, NextFunction } from "express";
 import { auth, parseToken } from "./utils/auth";
 import { checkTokenBlacklist } from "./utils/checkBlacklist";
@@ -53,6 +54,7 @@ app.use("/api", menuRouter);
 app.use("/api", btnRouter);
 app.use("/api", classifyRouter);
 app.use("/api", uploadRouter);
+app.use("/api", trademarkRouter);
 
 // 定义404中间件
 app.use((req: Request, res: Response, next: NextFunction) => {
