@@ -50,7 +50,7 @@ export const updateBtn = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { id, name, acl, menuId, icon} = req.body;
+  const { id, name, acl, menuId, icon } = req.body;
   try {
     // 判断是否传递了必要参数
     if (!id || !name || !acl || !menuId || !icon) {
@@ -90,7 +90,7 @@ export const updateBtn = async (
   } catch (error) {
     next(error);
   }
-}
+};
 
 // 删除权限按钮
 export const removeBtn = async (
@@ -118,4 +118,4 @@ export const removeBtn = async (
   } catch (error) {
     next(error);
   }
-}
+};
