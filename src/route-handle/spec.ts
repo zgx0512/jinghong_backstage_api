@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import Spec from "../models/spec";
-import dayjs from "dayjs";
+import { Spec } from "../models/spec";
 
 // 获取规格类型列表
 export const getSpecList = async (
@@ -9,7 +8,7 @@ export const getSpecList = async (
   next: NextFunction
 ) => {
   try {
-    const specList = await Spec.find().sort({ createTime: -1 });
+    const specList = await Spec.find().sort({ create_time: -1 });
     res.send({
       code: 200,
       data: specList,
@@ -57,3 +56,5 @@ export const addSpec = async (
     next(error);
   }
 };
+
+
