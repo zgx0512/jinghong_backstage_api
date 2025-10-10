@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { Goods } from "../models/goods";
 import { GoodsSku } from "../models/goodsSku";
+import { Classify } from "../models/classify";
 import dayjs from "dayjs";
 
 // 获取商品列表
@@ -52,6 +53,7 @@ export const getGoodsList = async (
           image_list: item.image_list,
           min_group_price: sku ? sku.min_group_price.toString() : "0",
           min_normal_price: sku ? sku.min_normal_price.toString() : "0",
+          category_id: item.category_id,
           create_time: dayjs(item.create_time)
             .subtract(8, "hour")
             .format("YYYY-MM-DD HH:mm:ss"),
@@ -370,6 +372,68 @@ export const getGoodsSkuList = async (
       code: 200,
       data: skuListWithSpec,
       message: "获取商品SKU列表成功",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 修改商品的归属分类
+export const updateGoodsCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { goods_id, category_id } = req.body;
+
+    // 1. 校验输入参数
+    if (!goods_id || !category_id) {
+      // 使用 400 Bad Request 状态码表示客户端请求错误
+      res.send({
+        code: 400,
+        data: null,
+        message: "缺少必要的参数: goods_id 或 category_id",
+      });
+      return;
+    }
+
+    // 2. 校验目标分类是否存在
+    const categoryExists = await Classify.findOne({
+      id: Number(category_id),
+    });
+
+    if (!categoryExists) {
+      // 使用 404 Not Found 状态码
+      res.status(404).send({
+        code: 404,
+        data: null,
+        message: "目标分类不存在",
+      });
+      return;
+    }
+
+    // 3. 执行更新
+    const goods = await Goods.findOneAndUpdate(
+      { goods_id: Number(goods_id), is_delete: 0 },
+      { category_id: Number(category_id) },
+      { new: true }
+    );
+
+    if (!goods) {
+      // 使用 404 Not Found 状态码
+      res.status(404).send({
+        code: 404,
+        data: null,
+        message: "商品不存在",
+      });
+      return;
+    }
+
+    res.send({
+      code: 200,
+      data: null,
+      message: "修改商品归属分类成功",
     });
   } catch (error) {
     next(error);

@@ -6,6 +6,7 @@ import {
   updateGoods,
   deleteGoods,
   getGoodsSkuList,
+  updateGoodsCategory,
 } from "../route-handle/goods";
 
 const router = Router();
@@ -22,5 +23,7 @@ router.post("/updateGoods", updateGoods);
 router.delete("/deleteGoods/:goods_id", deleteGoods);
 // 根据商品id获取sku列表
 router.get("/getGoodsSkuList", getGoodsSkuList);
+// 修改商品对应的归属分类
+router.post("/updateGoodsCategory", updateGoodsCategory);
 
 export default router;
