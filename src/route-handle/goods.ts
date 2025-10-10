@@ -341,3 +341,37 @@ export const deleteGoods = async (
     next(error);
   }
 };
+
+// 根据商品id获取对应的sku列表
+export const getGoodsSkuList = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { goods_id } = req.query;
+    const skuList = await GoodsSku.find(
+      { goods_id: Number(goods_id) },
+      { _id: 0 }
+    ).lean(); // 排除 _id 字段
+    // 处理SKU价格格式
+    const skuListWithSpec = skuList.map((sku) => ({
+      ...sku,
+      min_group_price: sku.min_group_price.toString(),
+      min_normal_price: sku.min_normal_price.toString(),
+      create_time: dayjs(sku.create_time)
+        .subtract(8, "hour")
+        .format("YYYY-MM-DD HH:mm:ss"),
+      update_time: dayjs(sku.update_time)
+        .subtract(8, "hour")
+        .format("YYYY-MM-DD HH:mm:ss"),
+    }));
+    res.send({
+      code: 200,
+      data: skuListWithSpec,
+      message: "获取商品SKU列表成功",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

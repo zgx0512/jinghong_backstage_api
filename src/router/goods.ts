@@ -4,7 +4,8 @@ import {
   createGoods,
   getGoodsDetail,
   updateGoods,
-  deleteGoods
+  deleteGoods,
+  getGoodsSkuList,
 } from "../route-handle/goods";
 
 const router = Router();
@@ -18,6 +19,8 @@ router.get("/getGoodsDetail", getGoodsDetail);
 // 更新商品
 router.post("/updateGoods", updateGoods);
 // 删除商品
-router.delete("/deleteGoods/:goods_id", deleteGoods)
+router.delete("/deleteGoods/:goods_id", deleteGoods);
+// 根据商品id获取sku列表
+router.get("/getGoodsSkuList", getGoodsSkuList);
 
 export default router;
