@@ -18,6 +18,7 @@ import uploadRouter from "./router/upload";
 import trademarkRouter from "./router/trademark";
 import goodsRouter from "./router/goods";
 import specRouter from "./router/spec";
+import orderRouter from "./router/order";
 import { Response, Request, NextFunction } from "express";
 import { auth, parseToken } from "./utils/auth";
 import { checkTokenBlacklist } from "./utils/checkBlacklist";
@@ -59,6 +60,7 @@ app.use("/api", uploadRouter);
 app.use("/api", trademarkRouter);
 app.use("/api", goodsRouter);
 app.use("/api", specRouter);
+app.use("/api", orderRouter);
 
 // 定义404中间件
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -87,9 +89,9 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // 开启监听端口
-const port = process.env.PORT || 27081;
-// 本地ip
-const ip = "192.168.3.90";
-app.listen(port as number, ip, () => {
-  console.log(`Server running in ${ip}:${port}`);
+const port = Number(process.env.PORT) || 27081;
+// 监听地址：默认 0.0.0.0，可用环境变量 HOST 覆盖
+const host = process.env.HOST || "0.0.0.0";
+app.listen(port, host, () => {
+  console.log(`Server running at http://${host}:${port}`);
 });

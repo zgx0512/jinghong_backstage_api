@@ -67,9 +67,11 @@ export const handleLogout = async (
     // 从请求头中获取token
     const token = req.headers.authorization!.split(" ")[1];
     if (token) {
-      // 将token加入黑名单中
-      // 格式：redis的key为bl_${token}，value为true，过期时间为7天
-      await redisClient.set(`bl_${token}`, "true", { EX: 60 * 60 * 24 * 7 });
+      // 将token加入黑名单，过期时间设置为该 token 的剩余有效期
+      const decoded = jwt.decode(token) as { exp?: number } | null;
+      const nowSec = Math.floor(Date.now() / 1000);
+      const ttlSec = decoded?.exp ? Math.max(decoded.exp - nowSec, 0) : 60 * 60 * 24 * 7; // fallback 7d
+      await redisClient.set(`bl_${token}`, "true", { EX: ttlSec });
     }
     res.send({
       code: 200,
