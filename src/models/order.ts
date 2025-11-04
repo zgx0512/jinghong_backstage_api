@@ -23,6 +23,7 @@ export interface IOrder extends mongoose.Document {
   recipient_city: string; // 收货人城市
   recipient_province: string; // 收货人省份
   recipient_postal_code: string; // 收货人邮编
+  express_no: string; // 物流单号
   create_time: Date; // 下单时间
   pay_time: Date; // 支付时间
 }
@@ -45,7 +46,8 @@ const OrderSehema = new mongoose.Schema<IOrder>({
   recipient_address: { type: String, required: true },
   recipient_city: { type: String, required: true },
   recipient_province: { type: String, required: true },
-  recipient_postal_code: { type: String, required: true },
+  recipient_postal_code: { type: String },
+  express_no: { type: String, required: true },
   create_time: {
     type: Date,
     default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),

@@ -3,7 +3,7 @@ import { connectDB } from "./config/db";
 connectDB();
 
 /* 
-小牛电商后台的后端接口文件
+鲸鸿电商后台的后端接口文件
  */
 require("dotenv").config();
 import express from "express";
