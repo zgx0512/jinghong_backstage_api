@@ -19,6 +19,7 @@ import trademarkRouter from "./router/trademark";
 import goodsRouter from "./router/goods";
 import specRouter from "./router/spec";
 import orderRouter from "./router/order";
+import expressRouter from "./router/express";
 import { Response, Request, NextFunction } from "express";
 import { auth, parseToken } from "./utils/auth";
 import { checkTokenBlacklist } from "./utils/checkBlacklist";
@@ -61,6 +62,7 @@ app.use("/api", trademarkRouter);
 app.use("/api", goodsRouter);
 app.use("/api", specRouter);
 app.use("/api", orderRouter);
+app.use("/api", expressRouter);
 
 // 定义404中间件
 app.use((req: Request, res: Response, next: NextFunction) => {

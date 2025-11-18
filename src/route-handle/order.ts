@@ -117,3 +117,45 @@ export const getOrderList = async (
     next(error);
   }
 };
+
+// 获取订单详情
+export const getOrderDetail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { order_id } = req.query;
+    if (!order_id) {
+      res.send({
+        code: 400,
+        data: null,
+        message: "参数错误",
+      });
+      return;
+    }
+    // 查找订单号是否存在
+    const order = await Order.findOne({ order_id }, { _id: 0 }).lean();
+    if (!order) {
+      res.send({
+        code: 400,
+        data: null,
+        message: "订单不存在",
+      });
+      return;
+    }
+    const orderDetail = {
+      ...order,
+      create_time: dayjs(order.create_time).format("YYYY-MM-DD HH:mm:ss"),
+      pay_time: dayjs(order.pay_time).format("YYYY-MM-DD HH:mm:ss"),
+    };
+    res.send({
+      code: 200,
+      message: "获取订单详情成功",
+      data: orderDetail,
+    });
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
