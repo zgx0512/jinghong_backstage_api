@@ -43,7 +43,7 @@ export const getMenuList = async (req: Request, res: Response) => {
             const btnList = btns.filter((btn) => btn.menuId === treeNodes.id);
             const res = btnList.map((btn) => ({
               type: "btn",
-              btnId: btn.btnId,
+              id: btn.btnId,
               name: btn.name,
               acl: btn.acl,
               icon: btn.btnIcon,

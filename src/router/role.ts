@@ -10,6 +10,7 @@ import {
   updateRole,
   deleteRole,
   batchDeleteRole,
+  assignPermissions
 } from "../route-handle/role";
 
 const router = Router();
@@ -28,5 +29,8 @@ router.delete("/deleteRole/:roleId", deleteRole);
 
 // 批量删除角色
 router.delete("/batchDeleteRole", batchDeleteRole);
+
+// 分配权限
+router.post("/assignPermissions", assignPermissions);
 
 export default router;

@@ -2,9 +2,6 @@
 菜单模型
  */
 import mongoose from "mongoose";
-// 引入ID自增方法
-import { getNextSequence } from "./counter";
-
 // 定义菜单模型接口类型
 export interface IMenu extends mongoose.Document {
   menuId: number; // 菜单ID
@@ -41,16 +38,35 @@ export const menuSchema = new mongoose.Schema<IMenu>({
   },
 });
 
-// 在保存菜单时自动生成menuId
+// 在保存菜单时自动生成menuId（与按钮共用一套自增ID）
 menuSchema.pre("save", async function (next) {
-  if (this.isNew) {
-    try {
-      this.menuId = await getNextSequence("menuId");
-    } catch (error) {
-      throw error;
-    }
+  if (!this.isNew) {
+    return next();
   }
-  next();
+
+  try {
+    const MenuModel = mongoose.models.Menu as mongoose.Model<any> | undefined;
+    const BtnModel = mongoose.models.Btn as mongoose.Model<any> | undefined;
+
+    const [maxMenuDoc, maxBtnDoc] = await Promise.all([
+      MenuModel
+        ? MenuModel.findOne().sort({ menuId: -1 }).select("menuId").lean()
+        : null,
+      BtnModel
+        ? BtnModel.findOne().sort({ btnId: -1 }).select("btnId").lean()
+        : null,
+    ]);
+
+    const baseId = 10000;
+    const maxMenuId = (maxMenuDoc as any)?.menuId ?? baseId;
+    const maxBtnId = (maxBtnDoc as any)?.btnId ?? baseId;
+    const nextId = Math.max(maxMenuId, maxBtnId) + 1;
+
+    this.menuId = nextId;
+    next();
+  } catch (error) {
+    next(error as any);
+  }
 });
 // 定义菜单模型
 export const Menu = mongoose.model<IMenu>("Menu", menuSchema);

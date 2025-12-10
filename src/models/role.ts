@@ -9,6 +9,8 @@ import { getNextSequence } from "./counter";
 export interface IRole extends mongoose.Document {
   roleId: number;
   roleName: string;
+  permissions: number[];
+  role_ids: number[];
   createTime: Date;
   updateTime: Date;
 }
@@ -17,6 +19,8 @@ export interface IRole extends mongoose.Document {
 export const roleSchema = new mongoose.Schema<IRole>({
   roleId: { type: Number, unique: true },
   roleName: { type: String, unique: true, required: true },
+  permissions: { type: [Number], default: [] },
+  role_ids: { type: [Number], default: [] },
   createTime: {
     type: Date,
     default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),

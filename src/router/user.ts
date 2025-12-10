@@ -13,6 +13,8 @@ import {
   handleUpdateUser,
   handleDeleteUser,
   handleBatchDeleteUser,
+  getRoleInfo,
+  assignRoles,
 } from "@handlers/user";
 // 引入校验规则
 import { registerValidator } from "@/utils/userValidator";
@@ -41,7 +43,13 @@ router.put("/updateUser", registerValidator, handleUpdateUser);
 router.delete("/deleteUser/:userId", handleDeleteUser);
 
 // 批量删除用户
-router.delete("/batchDeleteUser", handleBatchDeleteUser)
+router.delete("/batchDeleteUser", handleBatchDeleteUser);
+
+// 获取当前用户的角色信息
+router.get("/getRoleInfo", getRoleInfo);
+
+// 分配角色
+router.post("/assignRoles", assignRoles);
 
 // 导出路由
 export default router;

@@ -18,7 +18,8 @@ export const handleGetRoleList = async (
       : {};
     const roles = await Role.find(queryCondition)
       .skip((Number(page) - 1) * Number(limit))
-      .limit(Number(limit));
+      .limit(Number(limit))
+      .lean();
     // 获取总数
     const total = await Role.countDocuments(queryCondition);
     // 整合返回的数据
@@ -27,6 +28,7 @@ export const handleGetRoleList = async (
         id: role.roleId,
         roleName: role.roleName,
         createTime: role.createTime,
+        role_ids: role.role_ids,
         updateTime: role.updateTime,
       };
     });
@@ -182,6 +184,45 @@ export const batchDeleteRole = async (
     res.send({
       code: 200,
       message: "角色批量删除成功",
+      data: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 分配权限
+export const assignPermissions = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { roleId, permissions, halfPermissions } = req.body;
+  try {
+    if (!roleId || !permissions || !halfPermissions) {
+      res.status(400).send({
+        code: 10001,
+        message: "参数错误",
+        data: null,
+      });
+      return;
+    }
+    // 查找当前角色，将其权限字段更新为新的权限
+    const role = await Role.findOne({ roleId });
+    if (!role) {
+      res.send({
+        code: 400,
+        message: "角色不存在",
+        data: null,
+      });
+      return;
+    }
+    role.permissions = [...permissions, ...halfPermissions];
+    role.role_ids = [...permissions];
+    await role.save();
+    res.send({
+      code: 200,
+      message: "权限分配成功",
       data: null,
     });
   } catch (error) {

@@ -10,7 +10,8 @@ export interface IUser extends mongoose.Document {
   email: string;
   createTime: Date;
   updateTime: Date;
-  role?: string[];
+  role_ids?: string;
+  roleNames?: string;
   avatar?: string;
   comparePassword: (password: string) => Promise<boolean>; // 密码校验函数
 }
@@ -37,13 +38,14 @@ const userSchema = new mongoose.Schema<IUser>({
     type: String,
     required: true,
   },
-  role: [
-    {
-      type: String,
-      ref: "Role",
-      required: false,
-    },
-  ],
+  role_ids: {
+    type: String,
+    required: false,
+  },
+  roleNames: {
+    type: String,
+    required: false,
+  },
   avatar: {
     type: String,
     required: false,

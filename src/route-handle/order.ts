@@ -13,6 +13,7 @@ export const getOrderList = async (
       page = 1,
       limit = 10,
       order_id,
+      order_status,
       after_sale_status,
       goods,
       spec,
@@ -31,6 +32,11 @@ export const getOrderList = async (
     if (after_sale_status !== undefined && after_sale_status !== "") {
       const s = Number(after_sale_status);
       filter.after_sale_status = Number.isNaN(s) ? after_sale_status : s;
+    }
+
+    if (order_status !== undefined && order_status !== "") {
+      const s = Number(order_status);
+      filter.order_status = Number.isNaN(s) ? order_status : s;
     }
 
     if (recipient_phone) filter.recipient_phone = String(recipient_phone);

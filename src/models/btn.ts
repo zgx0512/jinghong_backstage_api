@@ -4,8 +4,6 @@
 
 import mongoose from "mongoose";
 
-// 引入自增ID方法
-import { getNextSequence } from "./counter";
 
 // 定义按钮模型接口类型
 interface IBtn extends mongoose.Document {
@@ -35,16 +33,35 @@ const btnSchema = new mongoose.Schema<IBtn>({
   }, // 更新时间
 });
 
-// 在保存时自动生成id
+// 在保存时自动生成id（与菜单共用一套自增ID）
 btnSchema.pre("save", async function (next) {
-  if (this.isNew) {
-    try {
-      this.btnId = await getNextSequence("btnId");
-    } catch (error) {
-      throw new Error("获取btnId失败");
-    }
+  if (!this.isNew) {
+    return next();
   }
-  next();
+
+  try {
+    const MenuModel = mongoose.models.Menu as mongoose.Model<any> | undefined;
+    const BtnModel = mongoose.models.Btn as mongoose.Model<any> | undefined;
+
+    const [maxMenuDoc, maxBtnDoc] = await Promise.all([
+      MenuModel
+        ? MenuModel.findOne().sort({ menuId: -1 }).select("menuId").lean()
+        : null,
+      BtnModel
+        ? BtnModel.findOne().sort({ btnId: -1 }).select("btnId").lean()
+        : null,
+    ]);
+
+    const baseId = 10000;
+    const maxMenuId = (maxMenuDoc as any)?.menuId ?? baseId;
+    const maxBtnId = (maxBtnDoc as any)?.btnId ?? baseId;
+    const nextId = Math.max(maxMenuId, maxBtnId) + 1;
+
+    this.btnId = nextId;
+    next();
+  } catch (error) {
+    next(error as any);
+  }
 });
 
 export const Btn = mongoose.model<IBtn>("Btn", btnSchema);

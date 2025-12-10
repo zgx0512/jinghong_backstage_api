@@ -62,7 +62,7 @@ export const updateBtn = async (
       return;
     }
     // 判断名称是否存在（不包括自身）
-    const btn = await Btn.findOne({ name, btnId: { $ne: id } });
+    const btn = await Btn.findOne({ name, menuId, btnId: { $ne: id } });
     if (btn) {
       res.send({
         code: 409,

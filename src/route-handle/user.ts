@@ -5,10 +5,17 @@ import { Response, Request, NextFunction } from "express";
 import { validationResult } from "express-validator"; // 添加这行
 // 引入用户模型
 import { User } from "@/models/user";
+// 引入角色模型
+import { Role } from "@/models/role";
+// 引入菜单模型
+import { Menu } from "@/models/menu";
+// 引入按钮模型
+import { Btn } from "@/models/btn";
 // 引入jwt
 import jwt from "jsonwebtoken";
 // 引入redis
 import redisClient from "@/config/redis";
+import dayjs from "dayjs";
 // 生成token的方法
 const generateToken = (userId: number, username: string): string => {
   return jwt.sign({ userId, username }, process.env.JWT_SECRET as string, {
@@ -70,7 +77,9 @@ export const handleLogout = async (
       // 将token加入黑名单，过期时间设置为该 token 的剩余有效期
       const decoded = jwt.decode(token) as { exp?: number } | null;
       const nowSec = Math.floor(Date.now() / 1000);
-      const ttlSec = decoded?.exp ? Math.max(decoded.exp - nowSec, 0) : 60 * 60 * 24 * 7; // fallback 7d
+      const ttlSec = decoded?.exp
+        ? Math.max(decoded.exp - nowSec, 0)
+        : 60 * 60 * 24 * 7; // fallback 7d
       await redisClient.set(`bl_${token}`, "true", { EX: ttlSec });
     }
     res.send({
@@ -109,11 +118,87 @@ export const handleGetUser = async (
       });
       return;
     }
+    // 根据role_ids获取用户角色并集起来的权限id
+    const roleIdList = userInfo.role_ids
+      ? userInfo.role_ids.split(",").map(Number)
+      : [];
+    // 获取当前用户所拥有的所有权限
+    const roleList = await Role.find({ roleId: { $in: roleIdList } });
+
+    // 找出当前所有角色合并后的权限数组（去重）
+    const permissionIdSet = new Set<number>();
+
+    roleList.forEach((role) => {
+      (role.permissions || []).forEach((permId: number) => {
+        permissionIdSet.add(permId);
+      });
+    });
+
+    const permissionIdList = Array.from(permissionIdSet);
+    // 找出用户所拥有的菜单（扁平列表）
+    const flatMenuList = await Menu.find({
+      menuId: { $in: permissionIdList },
+    }).lean();
+
+    // 将菜单列表组装成树形结构
+    const menuMap = new Map<number, any>();
+    flatMenuList.forEach((menu: any) => {
+      menu.children = [];
+      menuMap.set(menu.menuId, menu);
+    });
+
+    const menuTree: any[] = [];
+    flatMenuList.forEach((menu) => {
+      const parentId = menu.parentId;
+      if (parentId == null) {
+        // 没有 parentId，视为顶级菜单
+        menuTree.push(menu);
+      } else {
+        const parent = menuMap.get(parentId);
+        if (parent) {
+          parent.children = parent.children || [];
+          parent.children.push(menu);
+        } else {
+          // 找不到父节点时，退化为顶级
+          menuTree.push(menu);
+        }
+      }
+    });
+
+    // 递归查找第一个叶子菜单（默认路由），排除路径为 /screen 的菜单
+    const findFirstLeafMenu = (nodes: any[]): any | null => {
+      for (const node of nodes) {
+        const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+        const isScreenRoute = node.menuPath === "/screen";
+
+        if (!hasChildren && !isScreenRoute) {
+          return node;
+        }
+
+        const found = findFirstLeafMenu(node.children || []);
+        if (found) {
+          return found;
+        }
+      }
+      return null;
+    };
+
+    const firstLeafMenu = findFirstLeafMenu(menuTree);
+
+    // 找出用户所拥有的按钮
+    const btnList = await Btn.find({
+      btnId: { $in: permissionIdList },
+    });
+    // 找出按钮对应的标识
+    const btnAclList = btnList.map((btn) => btn.acl);
     const userInfoData = {
       userId: userInfo.userId,
       username: userInfo.username,
       email: userInfo.email,
-      role: userInfo.role,
+      menuList: menuTree,
+      defaultRoute: firstLeafMenu ? firstLeafMenu.menuPath : '',
+      defaultMenuName: firstLeafMenu ? firstLeafMenu.acl : '',
+      btnAclList,
       avatar: userInfo.avatar,
       createTime: userInfo.createTime,
       updateTime: userInfo.updateTime,
@@ -155,7 +240,8 @@ export const handleGetUserList = async (
         userId: user.userId,
         username: user.username,
         email: user.email,
-        role: user.role,
+        role_ids: user.role_ids,
+        roleNames: user.roleNames,
         createTime: user.createTime,
         updateTime: user.updateTime,
       };
@@ -308,5 +394,96 @@ export const handleBatchDeleteUser = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+// 获取用户角色信息
+export const getRoleInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // 获取所有的用户
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      res.status(10001).send({
+        code: 10001,
+        message: "用户ID不能为空",
+      });
+      return;
+    }
+    const currentUser = await User.findOne({ userId }).lean();
+    if (!currentUser) {
+      res.status(10001).send({
+        code: 10001,
+        message: "用户不存在",
+      });
+      return;
+    }
+    const allRoles = (await Role.find().lean().sort({ createTime: -1 })).map(
+      (item) => ({
+        id: item.roleId,
+        createTime: dayjs(item.createTime)
+          .subtract(8, "hour")
+          .format("YYYY-MM-DD HH:mm:ss"),
+        updateTime: dayjs(item.updateTime)
+          .subtract(8, "hour")
+          .format("YYYY-MM-DD HH:mm:ss"),
+        roleName: item.roleName,
+      })
+    );
+    const role_ids = currentUser.role_ids
+      ? currentUser.role_ids.split(",")
+      : [];
+    // 获取当前用户拥有的角色
+    const checkedRoles = allRoles.filter((role) =>
+      role_ids.includes(String(role.id))
+    );
+    res.send({
+      code: 200,
+      message: "获取用户角色信息成功",
+      data: {
+        allRoles,
+        checkedRoles,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 给用户分配角色
+export const assignRoles = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId, role_ids } = req.body;
+    if (!userId) {
+      res.status(10001).send({
+        code: 10001,
+        message: "用户ID不能为空",
+      });
+    }
+    const currentUser = await User.findOne({ userId }).lean();
+    if (!currentUser) {
+      res.status(10001).send({
+        code: 10001,
+        message: "用户不存在",
+      });
+    }
+    // 查找角色id对应的角色名称
+    const roleIdList = role_ids ? role_ids.split(",").map(Number) : [];
+    const roles = await Role.find({ roleId: { $in: roleIdList } }).lean();
+    const roleNames = roles.map((role) => role.roleName).join(",");
+    await User.updateOne({ userId }, { role_ids, roleNames }); // 给用户分配角色
+    res.send({
+      code: 200,
+      message: "分配角色成功",
+      data: null,
+    });
+  } catch (error) {
+    console.log(error);
   }
 };
