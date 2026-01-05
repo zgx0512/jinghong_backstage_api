@@ -1,4 +1,4 @@
-// 订单模型
+// 模拟数据的订单模型
 import mongoose from "mongoose";
 
 // 引入自增ID的公共方法
@@ -15,7 +15,7 @@ export interface IOrderStatusLog {
 }
 
 // 定义订单模型的ts类型
-export interface IOrder extends mongoose.Document {
+export interface IMockOrder extends mongoose.Document {
   c_user_id: number; // 用户id
   order_id: string; // 订单号
   order_status: number | string; // 订单状态(1-待付款 2-待发货 3-待收货 4-待评价 5-已完成 6-已取消)
@@ -26,6 +26,7 @@ export interface IOrder extends mongoose.Document {
   goods_num: number; // 商品数量
   goods_image: string; // 商品图片
   spec: string; // 商品规格
+  category: number; // 商品类目
   min_group_price: number; // 实付金额
   express_sn: string; // 物流单号
   express_code: string; // 物流公司编码
@@ -54,7 +55,7 @@ const OrderStatusLogSchema = new mongoose.Schema<IOrderStatusLog>(
 );
 
 // 定义订单模型的schema
-const OrderSehema = new mongoose.Schema<IOrder>({
+const MockOrderSehema = new mongoose.Schema<IMockOrder>({
   c_user_id: { type: Number, required: true }, // 用户id
   order_id: { type: String, unique: true },
   order_status: { type: Number, default: 0 }, // 订单状态 0-待付款 1-待发货 2-待收货 3-已完成 4-已取消
@@ -65,6 +66,7 @@ const OrderSehema = new mongoose.Schema<IOrder>({
   goods_num: { type: Number, required: true },
   goods_image: { type: String, required: true },
   spec: { type: String, required: true },
+  category: { type: Number, required: true },
   min_group_price: { type: Number, required: true },
   express_sn: { type: String },
   express_code: { type: String },
@@ -86,7 +88,7 @@ const OrderSehema = new mongoose.Schema<IOrder>({
 });
 
 // 在保存时自动生成订单号，通过创建时间和从10000开始的序号
-OrderSehema.pre("save", async function (next) {
+MockOrderSehema.pre("save", async function (next) {
   if (!this.isNew || this.order_id) return next();
   try {
     const now = new Date(Date.now() + 8 * 60 * 60 * 1000); // 东8区
@@ -109,4 +111,4 @@ OrderSehema.pre("save", async function (next) {
 });
 
 // 导出模型
-export const Order = mongoose.model<IOrder>("Order", OrderSehema);
+export const MockOrder = mongoose.model<IMockOrder>("MockOrder", MockOrderSehema);
