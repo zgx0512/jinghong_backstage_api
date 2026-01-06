@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getDataOverview, getTrendAnalysis, getCategorySales } from "../route-handle/analysis";
+import { getDataOverview, getTrendAnalysis, getCategorySales, getRealTimeData } from "../route-handle/analysis";
 
 const router = Router();
 
@@ -9,5 +9,7 @@ router.get("/getDataOverview", getDataOverview);
 router.get("/getTrendAnalysis", getTrendAnalysis);
 // 商品类目销售饼图
 router.get("/getCategorySales", getCategorySales);
+// 实时订单数据
+router.get("/getRealTimeData", getRealTimeData);
 
 export default router;

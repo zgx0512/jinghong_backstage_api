@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction } from "express";
 import { MockOrder } from "../models/mockOrder"; // 根据实际路径调整
 import dayjs from "dayjs";
+import redisClient from "../config/redis";
 
 // 类型定义
 interface DateRange {
@@ -681,6 +682,131 @@ export const getCategorySales = async (
       data: dailyData,
       message: "获取数据成功",
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 实时数据
+export const getRealTimeData = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // 获取用户id
+    const { user } = req as any;
+    const userId = user.userId;
+    const redisKey = `user:${userId}:realTimeData`;
+    // 检查用户是否在5分钟内已请求过
+    const lastRequestTime = await redisClient.get(redisKey);
+    console.log(lastRequestTime);
+    if (lastRequestTime) {
+      const currentTime = Date.now();
+      const timeDiff = currentTime - parseInt(lastRequestTime);
+      const fiveMinutes = 5 * 60 * 1000; // 5分钟的毫秒数
+
+      if (timeDiff < fiveMinutes) {
+        res.send({
+          code: 429,
+          data: null,
+          message: "请求过于频繁，请稍后再试",
+        });
+        return;
+      }
+    }
+    // 获取当前时间
+    const now = dayjs();
+    const start_date = now.format("YYYY-MM-DD");
+    const end_date = now.format("YYYY-MM-DD HH:mm:ss");
+    // 获取实时订单数据
+    const realTimeOrderData =
+      (await MockOrder.find({
+        pay_time: {
+          $gte: setDateBoundaries(new Date(start_date), true),
+          $lte: new Date(end_date),
+        },
+      }).lean()) || [];
+    // 实时订单
+    const today_order_cnt = realTimeOrderData.length;
+    // 实时gmv
+    const today_order_amount = Number(
+      realTimeOrderData
+        .reduce((acc, item) => {
+          return acc + item.min_group_price;
+        }, 0)
+        .toFixed(2)
+    );
+    // 实时退款订单列表
+    const refund_order_list =
+      realTimeOrderData.filter((item) => item.order_status === 4) || [];
+    const today_refund_order_cnt = refund_order_list.length;
+    // 实时退款金额
+    const today_refund_amount = Number(
+      refund_order_list
+        .reduce((acc, item) => {
+          return acc + item.min_group_price;
+        }, 0)
+        .toFixed(2)
+    );
+    // 实时平均客单价
+    const today_avg_order_price = Number(
+      (today_order_amount / today_order_cnt).toFixed(2)
+    );
+    // 实时退款率
+    const today_refund_rate = Number(
+      (today_refund_order_cnt / today_order_cnt).toFixed(2)
+    );
+    // 获取订单商品销量统计数据
+    const orderProductData = await MockOrder.aggregate([
+      {
+        $match: {
+          pay_time: {
+            $gte: setDateBoundaries(new Date(start_date), true),
+            $lte: new Date(end_date),
+          },
+          order_status: { $ne: 4 }, // 排除已取消的订单
+        },
+      },
+      {
+        $group: {
+          _id: "$goods_id",
+          goods_name: { $first: "$goods_name" },
+          goods_num: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          goods_id: "$_id",
+          goods_name: 1,
+          goods_num: 1,
+        },
+      },
+      {
+        $sort: { goods_num: -1 },
+      },
+    ]);
+    // 更新Redis中的最后请求时间
+    await redisClient.set(redisKey, Date.now().toString());
+    // 设置5分钟过期时间
+    await redisClient.expire(redisKey, 300); // 300秒 = 5分钟
+    res.send({
+      code: 200,
+      data: {
+        today_order_cnt,
+        today_order_amount,
+        today_refund_order_cnt,
+        today_refund_amount,
+        today_avg_order_price,
+        today_refund_rate,
+        orderProductData: orderProductData.slice(0, 5),
+      },
+      message: "获取数据成功",
+    });
+    return;
   } catch (error) {
     next(error);
   }
