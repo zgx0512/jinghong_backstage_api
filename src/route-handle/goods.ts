@@ -15,9 +15,15 @@ export const getGoodsList = async (
     const { category_id, page = 1, limit = 10 } = req.query;
 
     const filter: any = { is_delete: 0 };
-    if (category_id) {
-      filter.category_id = Number(category_id);
+    if (!category_id) {
+      res.send({
+        code: 400,
+        data: null,
+        message: "请选择分类",
+      });
+      return;
     }
+    filter.category_id = Number(category_id);
 
     const goodsList = await Goods.find(filter)
       .skip((Number(page) - 1) * Number(limit))

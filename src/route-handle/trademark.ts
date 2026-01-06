@@ -11,7 +11,7 @@ export const getTrademarkList = async (
   try {
     const { page = 1, limit = 10, name } = req.query;
     const queryCondition = name
-      ? { name: { $regex: name, $options: "i" } }
+      ? { tmName: { $regex: name, $options: "i" } }
       : {};
     const trademarkList = await Trademark.find(queryCondition)
       .skip((Number(page) - 1) * Number(limit))

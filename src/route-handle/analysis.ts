@@ -700,7 +700,6 @@ export const getRealTimeData = async (
     const redisKey = `user:${userId}:realTimeData`;
     // 检查用户是否在5分钟内已请求过
     const lastRequestTime = await redisClient.get(redisKey);
-    console.log(lastRequestTime);
     if (lastRequestTime) {
       const currentTime = Date.now();
       const timeDiff = currentTime - parseInt(lastRequestTime);

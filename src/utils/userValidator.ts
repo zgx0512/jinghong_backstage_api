@@ -16,7 +16,7 @@ export const registerValidator = [
     .withMessage("用户名不能为空")
     .isLength({ min: 3, max: 12 })
     .withMessage("用户名长度应在2-12个字符之间")
-    .matches(/^[\u4e00-\u9fa5a-zA-Z0-9_]+$/)
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\S]{6,}$/)
     .withMessage("用户名只能包含中文、字母、数字和下划线"),
 
   body("password")

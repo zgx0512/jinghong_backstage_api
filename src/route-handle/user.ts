@@ -406,7 +406,7 @@ export const getRoleInfo = async (
   try {
     const { userId } = req.query;
     if (!userId) {
-      res.status(10001).send({
+      res.send({
         code: 10001,
         message: "用户ID不能为空",
       });
@@ -414,7 +414,7 @@ export const getRoleInfo = async (
     }
     const currentUser = await User.findOne({ userId }).lean();
     if (!currentUser) {
-      res.status(10001).send({
+      res.send({
         code: 10001,
         message: "用户不存在",
       });
@@ -461,14 +461,14 @@ export const assignRoles = async (
   try {
     const { userId, role_ids } = req.body;
     if (!userId) {
-      res.status(10001).send({
+      res.send({
         code: 10001,
         message: "用户ID不能为空",
       });
     }
     const currentUser = await User.findOne({ userId }).lean();
     if (!currentUser) {
-      res.status(10001).send({
+      res.send({
         code: 10001,
         message: "用户不存在",
       });
@@ -484,6 +484,7 @@ export const assignRoles = async (
       data: null,
     });
   } catch (error) {
+    next(error);
     console.log(error);
   }
 };
