@@ -263,7 +263,7 @@ export const sendExpress = async (
         $set: {
           status: 1, // 统一使用字符串状态，更易读易扩展
           checkpoints: expressInfo,
-          last_updated_time: new Date(),
+          last_updated_time: new Date().toLocaleString("zh-CN"),
         },
       },
       { new: true, upsert: true }

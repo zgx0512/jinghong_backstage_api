@@ -10,8 +10,8 @@ interface ISpec extends mongoose.Document {
   spec_values: string[]; // 规格值数组
   sort_order: number; // 排序
   is_active: number; // 是否启用
-  create_time: Date;
-  update_time: Date;
+  create_time: string;
+  update_time: string;
 }
 
 // 定义规格类型的Schema
@@ -40,12 +40,12 @@ const SpecSchema = new mongoose.Schema<ISpec>({
     default: 1,
   },
   create_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
   update_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
 });
 
@@ -57,7 +57,7 @@ SpecSchema.pre("save", async function (next) {
       throw error;
     }
   }
-  this.update_time = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  this.update_time = new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN");
   next();
 });
 

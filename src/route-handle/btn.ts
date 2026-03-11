@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { Btn } from "../models/btn";
 import { Menu } from "../models/menu";
+import dayjs from "dayjs";
 
 // 新增权限按钮
 export const addBtn = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { name, acl, menuId, icon } = req.body;
   try {
@@ -48,7 +49,7 @@ export const addBtn = async (
 export const updateBtn = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { id, name, acl, menuId, icon } = req.body;
   try {
@@ -79,8 +80,8 @@ export const updateBtn = async (
         acl,
         menuId,
         btnIcon: icon,
-        updateTime: new Date(Date.now() + 8 * 60 * 60 * 1000),
-      }
+        updateTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+      },
     );
     res.send({
       code: 200,
@@ -96,7 +97,7 @@ export const updateBtn = async (
 export const removeBtn = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { id } = req.params;
   try {

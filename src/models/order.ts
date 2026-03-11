@@ -36,8 +36,8 @@ export interface IOrder extends mongoose.Document {
   recipient_province: string; // 收货人省份
   recipient_postal_code: string; // 收货人邮编
   order_status_log: IOrderStatusLog[]; // 订单状态日志
-  create_time: Date; // 下单时间
-  pay_time: Date; // 支付时间
+  create_time: string; // 下单时间
+  pay_time: string; // 支付时间
 }
 
 // 定义订单状态日志的schema
@@ -76,12 +76,12 @@ const OrderSehema = new mongoose.Schema<IOrder>({
   recipient_postal_code: { type: String },
   order_status_log: { type: [OrderStatusLogSchema], default: [] }, // 订单状态日志
   create_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
   pay_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
 });
 

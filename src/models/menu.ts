@@ -2,6 +2,7 @@
 菜单模型
  */
 import mongoose from "mongoose";
+import dayjs from "dayjs";
 // 定义菜单模型接口类型
 export interface IMenu extends mongoose.Document {
   menuId: number; // 菜单ID
@@ -9,8 +10,8 @@ export interface IMenu extends mongoose.Document {
   menuIcon: string; // 菜单图标
   menuPath: string; // 菜单路径
   acl: string; // 权限
-  createTime: Date; // 创建时间
-  updateTime: Date; // 更新时间
+  createTime: string; // 创建时间
+  updateTime: string; // 更新时间
   parentId: number | null; // 父菜单ID
   level: number; // 菜单层级
   isLeaf: boolean; // 是否为叶子节点
@@ -29,12 +30,12 @@ export const menuSchema = new mongoose.Schema<IMenu>({
   isLeaf: { type: Boolean, default: true },
   hasBtnsAcl: { type: Boolean, default: false },
   createTime: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => dayjs().format("YYYY-MM-DD HH:mm:ss"),
   },
   updateTime: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => dayjs().format("YYYY-MM-DD HH:mm:ss"),
   },
 });
 

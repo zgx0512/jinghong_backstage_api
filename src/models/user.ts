@@ -8,8 +8,8 @@ export interface IUser extends mongoose.Document {
   username: string;
   password: string;
   email: string;
-  createTime: Date;
-  updateTime: Date;
+  createTime: string;
+  updateTime: string;
   role_ids?: string;
   roleNames?: string;
   avatar?: string;
@@ -51,12 +51,12 @@ const userSchema = new mongoose.Schema<IUser>({
     required: false,
   },
   createTime: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
   updateTime: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
 });
 

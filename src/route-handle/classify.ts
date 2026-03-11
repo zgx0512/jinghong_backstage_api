@@ -23,12 +23,8 @@ export const getAllClassify = async (
         id: classify.id,
         level: classify.level,
         parentId: classify.parentId,
-        createTime: dayjs(classify.createTime)
-          .subtract(8, "hour")
-          .format("YYYY-MM-DD HH:mm:ss"),
-        updateTime: dayjs(classify.updateTime)
-          .subtract(8, "hour")
-          .format("YYYY-MM-DD HH:mm:ss"),
+        createTime: classify.createTime,
+        updateTime: classify.updateTime,
         children: buildTree(classify.id),
       }));
     };
@@ -61,12 +57,8 @@ export const getOneClassify = async (
       id: classify.id,
       level: classify.level,
       parentId: classify.parentId,
-      createTime: dayjs(classify.createTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-      updateTime: dayjs(classify.updateTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
+      createTime: classify.createTime,
+      updateTime: classify.updateTime,
     }));
     res.send({
       code: 200,
@@ -94,18 +86,9 @@ export const getTwoClassify = async (
         createTime: 1,
       })
       .lean();
-    const classifesData = classifes.map((classify) => ({
-      ...classify,
-      createTime: dayjs(classify.createTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-      updateTime: dayjs(classify.updateTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-    }));
     res.send({
       code: 200,
-      data: classifesData,
+      data: classifes,
       message: "获取二级分类列表成功",
     });
   } catch (error) {
@@ -129,18 +112,9 @@ export const getThreeClassify = async (
         createTime: 1,
       })
       .lean();
-    const classifesData = classifes.map((classify) => ({
-      ...classify,
-      createTime: dayjs(classify.createTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-      updateTime: dayjs(classify.updateTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-    }));
     res.send({
       code: 200,
-      data: classifesData,
+      data: classifes,
       message: "获取三级分类列表成功",
     });
   } catch (error) {
@@ -164,18 +138,9 @@ export const getClassifyByLevel = async (
         createTime: 1,
       })
       .lean();
-    const classifesData = classifes.map((classify) => ({
-      ...classify,
-      createTime: dayjs(classify.createTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-      updateTime: dayjs(classify.updateTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-    }));
     res.send({
       code: 200,
-      data: classifesData,
+      data: classifes,
       message: "获取分类列表成功",
     });
   } catch (error) {
@@ -199,18 +164,9 @@ export const getClassifyByLevelForEdit = async (
         createTime: 1,
       })
       .lean();
-    const classifesData = classifes.map((classify) => ({
-      ...classify,
-      createTime: dayjs(classify.createTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-      updateTime: dayjs(classify.updateTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-    }));
     res.send({
       code: 200,
-      data: classifesData,
+      data: classifes,
       message: "获取分类列表成功",
     });
   } catch (error) {
@@ -307,7 +263,7 @@ export const updateClassify = async (
         name,
         level,
         parentId,
-        updateTime: new Date(Date.now() + 8 * 60 * 60 * 1000),
+        updateTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
       }
     );
     res.send({

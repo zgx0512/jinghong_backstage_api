@@ -4,14 +4,15 @@
 import mongoose from "mongoose";
 // 引入计数器
 import { getNextSequence } from "./counter";
+import dayjs from "dayjs";
 
 // 定义品牌的ts类型
 interface ITrademark extends mongoose.Document {
   id: number;
   tmName: string;
   logoUrl: string;
-  createTime: Date;
-  updateTime: Date;
+  createTime: string;
+  updateTime: string;
 }
 
 // 定义品牌的schema
@@ -20,12 +21,12 @@ const trademarkSchema = new mongoose.Schema<ITrademark>({
   tmName: { type: String, required: true },
   logoUrl: { type: String, required: true },
   createTime: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => dayjs().format("YYYY-MM-DD HH:mm:ss"),
   },
   updateTime: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => dayjs().format("YYYY-MM-DD HH:mm:ss"),
   },
 });
 

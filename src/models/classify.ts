@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 
 // 引入自增ID方法
 import { getNextSequence } from "./counter";
+import dayjs from "dayjs";
 
 // 定义商品分类模型接口类型
 interface IClassify extends mongoose.Document {
@@ -13,8 +14,8 @@ interface IClassify extends mongoose.Document {
   id: number;
   level: number;
   parentId: number | null;
-  createTime: Date;
-  updateTime: Date;
+  createTime: string;
+  updateTime: string;
 }
 
 // 定义商品分类模型的Schema
@@ -24,12 +25,12 @@ const ClassifySchema = new mongoose.Schema<IClassify>({
   level: { type: Number, required: true },
   parentId: { type: Number, default: null },
   createTime: {
-    type: Date,
-    default: new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => dayjs().format("YYYY-MM-DD HH:mm:ss"),
   }, // 创建时间
   updateTime: {
-    type: Date,
-    default: new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => dayjs().format("YYYY-MM-DD HH:mm:ss"),
   }, // 更新时间
 })
 

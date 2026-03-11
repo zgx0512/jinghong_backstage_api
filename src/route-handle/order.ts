@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import { Order } from "../models/order";
+import { MockOrder } from "../models/mockOrder";
 import dayjs from "dayjs";
 
 // 获取订单列表
 export const getOrderList = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const {
@@ -63,27 +63,23 @@ export const getOrderList = async (
       const [rawStart, rawEnd] = String(create_time).split(",");
       const startStr = (rawStart || "").trim();
       const endStr = (rawEnd || rawStart || "").trim();
-
       if (startStr) {
-        const startIso = `${startStr}T00:00:00.000+08:00`;
-        const endIso = `${endStr}T23:59:59.999+08:00`;
-        const start = new Date(startIso);
-        const end = new Date(endIso);
-
-        const s = start <= end ? start : end;
-        const e = start <= end ? end : start;
-        filter.create_time = { $gte: s, $lte: e };
+        // 构建时间范围查询条件，使用正则表达式匹配日期部分
+        const startDateFilter = `${startStr} 00:00:00`;
+        const endDateFilter = `${endStr} 23:59:59`;
+        filter.create_time = { $gte: startDateFilter, $lte: endDateFilter };
       }
     }
+    console.log("filter", filter);
 
     if (pay_time) {
-      const dStr = String(pay_time).trim();
-      if (dStr) {
-        const startIso = `${dStr}T00:00:00.000+08:00`;
-        const endIso = `${dStr}T23:59:59.999+08:00`;
-        const start = new Date(startIso);
-        const end = new Date(endIso);
-        filter.pay_time = { $gte: start, $lte: end };
+      const [rawStart, rawEnd] = String(pay_time).split(",");
+      const startStr = (rawStart || "").trim();
+      const endStr = (rawEnd || rawStart || "").trim();
+      if (startStr) {
+        const startDate = `${startStr} 00:00:00`;
+        const endDate = `${endStr} 23:59:59`;
+        filter.pay_time = { $gte: startDate, $lte: endDate };
       }
     }
 
@@ -91,12 +87,12 @@ export const getOrderList = async (
     const limitNum = Number(limit);
 
     const [orders, total] = await Promise.all([
-      Order.find(filter)
+      MockOrder.find(filter)
         .sort({ create_time: -1 })
         .skip((pageNum - 1) * limitNum)
         .limit(limitNum)
         .lean(),
-      Order.countDocuments(filter),
+      MockOrder.countDocuments(filter),
     ]);
 
     const orderList = orders.map((order) => ({
@@ -128,7 +124,7 @@ export const getOrderList = async (
 export const getOrderDetail = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { order_id } = req.query;
@@ -141,7 +137,7 @@ export const getOrderDetail = async (
       return;
     }
     // 查找订单号是否存在
-    const order = await Order.findOne({ order_id }, { _id: 0 }).lean();
+    const order = await MockOrder.findOne({ order_id }, { _id: 0 }).lean();
     if (!order) {
       res.send({
         code: 400,

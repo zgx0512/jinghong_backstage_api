@@ -17,8 +17,8 @@ interface IGoods extends mongoose.Document {
   service_labels: string; // 服务标签
   goods_labels: string; // 商品标签
   delivery_promise_type: number; // 配送承诺类型
-  create_time: Date;
-  update_time: Date;
+  create_time: string;
+  update_time: string;
 }
 
 // 定义商品模型Schema
@@ -37,12 +37,12 @@ const goodsSchema = new mongoose.Schema<IGoods>({
   goods_labels: { type: String, required: false }, // 商品标签
   delivery_promise_type: { type: Number, required: false }, // 配送承诺类型
   create_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
   update_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
 });
 

@@ -2,6 +2,7 @@
 import mongoose from "mongoose";
 import { MockOrder } from "../models/mockOrder";
 import { connectDB } from "../config/db";
+import dayjs from "dayjs";
 
 // 定义订单状态和类型
 type OrderStatus = 0 | 1 | 2 | 3 | 4; // 0-待付款 1-待发货 2-待收货 3-已完成 4-已取消
@@ -17,18 +18,10 @@ function generateRandomOrder(date: Date, userId: number): any {
 
   // 只有在订单状态不是"待付款"（0）的情况下才可能有支付时间
   if (orderStatus > 0) {
-    // 支付时间应该晚于创建时间，但不超过创建时间后的一天，且不能超过当前时间
-    const payTimeOffset = Math.floor(Math.random() * 24 * 60 * 60 * 1000); // 0-24小时内整数秒
+    // 支付时间应该晚于创建时间，但不超过创建时间的30分钟，且不能超过当前时间
+    const payTimeOffset = Math.floor(Math.random() * 30 * 60 * 1000);
     const potentialPayTime = new Date(date.getTime() + payTimeOffset);
-
-    // 确保支付时间不晚于当前时间，且不早于订单创建时间
-    if (potentialPayTime.getTime() <= new Date().getTime()) {
-      // 如果潜在支付时间没有超过当前时间，则使用它
-      payTime = potentialPayTime;
-    } else {
-      // 如果潜在支付时间超过当前时间，则使用当前时间作为支付时间
-      payTime = new Date();
-    }
+    payTime = potentialPayTime;
   } else {
     payTime = undefined;
   }
@@ -115,7 +108,7 @@ function generateRandomOrder(date: Date, userId: number): any {
     goods_num: goodsNum,
     category: Math.floor(Math.random() * 6) + 1,
     goods_image: `https://example.com/images/product_${Math.floor(
-      Math.random() * 20
+      Math.random() * 20,
     )}.jpg`,
     spec: `规格${Math.floor(Math.random() * 5) + 1}`,
     min_group_price: minGroupPrice,
@@ -130,27 +123,25 @@ function generateRandomOrder(date: Date, userId: number): any {
     recipient_name:
       recipientNames[Math.floor(Math.random() * recipientNames.length)],
     recipient_phone: `1${Math.floor(Math.random() * 9)}${Math.floor(
-      Math.random() * 10
+      Math.random() * 10,
     )}${Math.floor(Math.random() * 10)}${Math.floor(
-      Math.random() * 10
+      Math.random() * 10,
     )}${Math.floor(Math.random() * 10)}${Math.floor(
-      Math.random() * 10
+      Math.random() * 10,
     )}${Math.floor(Math.random() * 10)}${Math.floor(
-      Math.random() * 10
+      Math.random() * 10,
     )}${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
     recipient_address: addresses[Math.floor(Math.random() * addresses.length)],
     recipient_city: cities[Math.floor(Math.random() * cities.length)],
     recipient_province: provinces[Math.floor(Math.random() * provinces.length)],
     recipient_postal_code: `${Math.floor(Math.random() * 9 + 1)}${Math.floor(
-      Math.random() * 10
+      Math.random() * 10,
     )}${Math.floor(Math.random() * 10)}${Math.floor(
-      Math.random() * 10
+      Math.random() * 10,
     )}${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
     order_status_log: [], // 订单状态日志暂时为空
-    create_time: new Date(date.getTime() + 8 * 60 * 60 * 1000), // 转换为东八区时间
-    pay_time: payTime
-      ? new Date(payTime.getTime() + 8 * 60 * 60 * 1000)
-      : "", // 转换为东八区时间
+    create_time: dayjs(date).format("YYYY-MM-DD HH:mm:ss"),
+    pay_time: payTime ? dayjs(payTime).format("YYYY-MM-DD HH:mm:ss") : "",
   };
 }
 
@@ -162,18 +153,18 @@ async function generateMockOrders() {
     console.log("数据库连接成功");
 
     // 设置起始时间和结束时间（东八区时间）
-    const startDate = new Date(Date.UTC(2025, 10, 1, 0, 0, 0)); // 2025年11月1日 (月份从0开始，10代表11月)
-    const endDate = new Date(Date.UTC(2026, 0, 4, 23, 59, 59)); // 2026年1月4日
+    const startDate = new Date(Date.UTC(2026, 0, 1, 0, 0, 0)); // 2026年1月1日 (月份从0开始)
+    const endDate = new Date(Date.UTC(2026, 2, 10, 23, 59, 59)); // 2026年3月9日
 
     console.log(
       `开始生成从 ${startDate.toISOString().split("T")[0]} 到 ${
         endDate.toISOString().split("T")[0]
-      } 的订单数据...`
+      } 的订单数据...`,
     );
 
     // 计算总天数
     const totalDays = Math.ceil(
-      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
     );
 
     for (let i = 0; i < totalDays; i++) {
@@ -183,13 +174,13 @@ async function generateMockOrders() {
       // 设置日期的时间为随机时间（0-23小时）
       currentDate.setHours(Math.floor(Math.random() * 24), 0, 0, 0);
 
-      // 每天生成300-500个随机订单
-      const orderCount = Math.floor(Math.random() * 201) + 300; // 300-500个订单
+      // 每天生成100-300个随机订单
+      const orderCount = Math.floor(Math.random() * 201) + 100; // 100-300个订单
 
       console.log(
         `正在生成 ${
           currentDate.toISOString().split("T")[0]
-        } 的 ${orderCount} 条订单...`
+        } 的 ${orderCount} 条订单...`,
       );
 
       const orders = [];
@@ -201,7 +192,7 @@ async function generateMockOrders() {
           Math.floor(Math.random() * 24), // 小时 0-23
           Math.floor(Math.random() * 60), // 分钟 0-59
           Math.floor(Math.random() * 60), // 秒 0-59
-          0 // 毫秒设为0
+          0, // 毫秒设为0
         );
 
         // 随机用户ID
@@ -219,7 +210,7 @@ async function generateMockOrders() {
       console.log(
         `已插入 ${currentDate.toISOString().split("T")[0]} 的 ${
           orders.length
-        } 条订单`
+        } 条订单`,
       );
     }
 
@@ -239,10 +230,10 @@ async function insertHourlyOrders() {
     await connectDB();
     console.log("数据库连接成功");
 
-    // 获取当前小时的开始时间（东八区时间）
+    // 获取当前小时的开始时间
     const now = new Date();
     // 转换为东八区时间
-    const startOfHour = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    const startOfHour = new Date(now.getTime());
     startOfHour.setMinutes(0, 0, 0); // 设置为整点，秒和毫秒为0
 
     const endOfHour = new Date(startOfHour);
@@ -250,7 +241,7 @@ async function insertHourlyOrders() {
 
     const orderCount = Math.floor(Math.random() * 16) + 5; // 5-20个订单
     console.log(
-      `正在生成从 ${startOfHour.toISOString()} 到 ${endOfHour.toISOString()} 的 ${orderCount} 条订单...`
+      `正在生成从 ${startOfHour.toISOString()} 到 ${endOfHour.toISOString()} 的 ${orderCount} 条订单...`,
     );
 
     const orders = [];
@@ -260,18 +251,18 @@ async function insertHourlyOrders() {
       const randomTime = new Date(
         startOfHour.getTime() +
           Math.floor(
-            Math.random() * (endOfHour.getTime() - startOfHour.getTime() - 1000)
-          ) // -1000 确保不会生成在下一个小时的开始
+            Math.random() *
+              (endOfHour.getTime() - startOfHour.getTime() - 1000),
+          ), // -1000 确保不会生成在下一个小时的开始
       );
       // 调整到整秒
       randomTime.setMilliseconds(0);
 
       // 随机用户ID
       const userId = Math.floor(Math.random() * 1000) + 1;
-
       const order = generateRandomOrder(randomTime, userId);
       orders.push(order);
-    }
+    }   
 
     // 使用循环调用create方法，确保pre钩子被触发生成订单号
     for (const order of orders) {
@@ -279,7 +270,7 @@ async function insertHourlyOrders() {
     }
 
     console.log(
-      `已插入 ${startOfHour.toISOString()} 这一小时的 ${orders.length} 条订单`
+      `已插入 ${startOfHour.toISOString()} 这一小时的 ${orders.length} 条订单`,
     );
   } catch (error) {
     console.error("插入小时订单数据时发生错误:", error);
@@ -313,12 +304,18 @@ async function runContinuously() {
   }
 
   // 设置定时器，每小时执行一次
-  setTimeout(() => {
-    // 每小时执行一次
-    setInterval(async () => {
-      await insertHourlyOrders();
-    }, 60 * 60 * 1000); // 每小时执行一次
-  }, Math.max(delay, 0));
+  setTimeout(
+    () => {
+      // 每小时执行一次
+      setInterval(
+        async () => {
+          await insertHourlyOrders();
+        },
+        60 * 60 * 1000,
+      ); // 每小时执行一次
+    },
+    Math.max(delay, 0),
+  );
 }
 
 // 根据命令行参数选择执行哪个功能
@@ -335,10 +332,10 @@ async function main() {
     // 如果没有参数或参数不匹配，显示帮助信息
     console.log("用法:");
     console.log(
-      "  生成指定日期范围内的订单: npx ts-node -r tsconfig-paths/register src/scripts/mockOrder.ts range"
+      "  生成指定日期范围内的订单: npx ts-node -r tsconfig-paths/register src/scripts/mockOrder.ts range",
     );
     console.log(
-      "  每小时持续生成订单: npx ts-node -r tsconfig-paths/register src/scripts/mockOrder.ts hourly"
+      "  每小时持续生成订单: npx ts-node -r tsconfig-paths/register src/scripts/mockOrder.ts hourly",
     );
   }
 }

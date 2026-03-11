@@ -21,19 +21,10 @@ export const getTrademarkList = async (
       })
       .lean();
     const total = await Trademark.countDocuments(queryCondition);
-    const list = trademarkList.map((item) => ({
-      ...item,
-      createTime: dayjs(item.createTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-      updateTime: dayjs(item.updateTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-    }));
     res.send({
       code: 200,
       data: {
-        trademarkList: list,
+        trademarkList,
         total,
         page: Number(page),
         page_size: Number(limit),
@@ -56,18 +47,9 @@ export const getAllTrademarkList = async (
         createTime: 1,
       })
       .lean();
-    const list = trademarkList.map((item) => ({
-      ...item,
-      createTime: dayjs(item.createTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-      updateTime: dayjs(item.updateTime)
-        .subtract(8, "hour")
-        .format("YYYY-MM-DD HH:mm:ss"),
-    }));
     res.send({
       code: 200,
-      data: list,
+      data: trademarkList,
       message: "获取所有品牌列表成功",
     });
   } catch (error) {
@@ -150,7 +132,7 @@ export const updateTrademark = async (
       {
         tmName,
         logoUrl,
-        updateTime: Date.now(),
+        updateTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
       }
     );
     res.send({

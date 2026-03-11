@@ -5,7 +5,7 @@ export interface ICheckpoint {
   content: string; // 轨迹内容
   express_name?: string;
   is_received: number;
-  op_time: Date;
+  op_time: string;
   op_type: string;
 }
 
@@ -15,9 +15,9 @@ export interface IExpress extends mongoose.Document {
   express_sn: string; // 快递单号
   status: string; // 轨迹状态
   checkpoints: ICheckpoint[]; // 轨迹数组，按时间降序
-  last_updated_time: Date; // 我方最后更新时间
-  created_time: Date;
-  updated_time: Date;
+  last_updated_time: string; // 我方最后更新时间
+  created_time: string;
+  updated_time: string;
 }
 
 // 轨迹子文档 Schema（不单独生成 _id）
@@ -27,8 +27,8 @@ const CheckpointSchema = new mongoose.Schema<ICheckpoint>(
     express_name: { type: String },
     is_received: { type: Number, default: 0 },
     op_time: {
-      type: Date,
-      default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+      type: String,
+      default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
     },
     op_type: { type: String, required: true },
   },
@@ -42,16 +42,16 @@ const ExpressSchema = new mongoose.Schema<IExpress>({
   // 使用子文档数组，满足 TS 对数组元素 Schema 的期望类型
   checkpoints: { type: [CheckpointSchema], default: [] },
   last_updated_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
   created_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
   updated_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
 });
 

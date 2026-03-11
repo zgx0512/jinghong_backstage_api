@@ -4,6 +4,7 @@
 
 import { NextFunction, Request, Response } from "express";
 import { Role } from "../models/role";
+import dayjs from "dayjs";
 
 // 获取所有角色
 export const handleGetRoleList = async (
@@ -121,7 +122,7 @@ export const updateRole = async (
       { roleId: id },
       {
         roleName,
-        updateTime: new Date(Date.now() + 8 * 60 * 60 * 1000),
+        updateTime: dayjs().format("yyyy-MM-dd HH:mm:ss"),
       }
     );
     res.send({

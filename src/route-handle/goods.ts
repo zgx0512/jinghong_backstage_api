@@ -238,7 +238,7 @@ export const updateGoods = async (
     // 处理数字字段的安全转换
     const processedUpdateData: any = {
       ...updateData,
-      update_time: new Date(Date.now() + 8 * 60 * 60 * 1000),
+      update_time: new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
     };
 
     // 安全转换数字字段
@@ -326,7 +326,7 @@ export const deleteGoods = async (
       { goods_id: Number(goods_id), is_delete: 0 },
       {
         is_delete: 1,
-        update_time: new Date(Date.now() + 8 * 60 * 60 * 1000),
+        update_time: new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
       },
       { new: true }
     );

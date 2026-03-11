@@ -7,11 +7,11 @@ import { getNextSequence } from "./counter";
 // 订单流转状态ts类型
 export interface IOrderStatusLog {
   order_status: number;
-  id: number;
+  id?: number; // 改为可选字段
   reason: string;
   order_id: string;
   c_user_id: number;
-  create_time: Date;
+  create_time: string;
 }
 
 // 定义订单模型的ts类型
@@ -37,19 +37,23 @@ export interface IMockOrder extends mongoose.Document {
   recipient_province: string; // 收货人省份
   recipient_postal_code: string; // 收货人邮编
   order_status_log: IOrderStatusLog[]; // 订单状态日志
-  create_time: Date; // 下单时间
-  pay_time: Date; // 支付时间
+  create_time: string; // 下单时间
+  pay_time: string; // 支付时间
 }
 
 // 定义订单状态日志的schema
 const OrderStatusLogSchema = new mongoose.Schema<IOrderStatusLog>(
   {
-    id: { type: Number, required: true, unique: true }, // 记录id
-    order_status: { type: Number, required: true }, // 订单状态
+   id: { 
+      type: Number, 
+      required: false, // 改为非必需
+     sparse: true     // 使用稀疏索引，只对存在值的字段建立索引
+    }, // 记录 id
+   order_status: { type: Number, required: true }, // 订单状态
     reason: { type: String, required: true }, // 状态变更原因
-    order_id: { type: String, required: true }, // 订单号
-    c_user_id: { type: Number, required: true }, // 操作用户id
-    create_time: { type: Date, default: Date.now }, // 状态变更时间
+   order_id: { type: String, required: true }, // 订单号
+    c_user_id: { type: Number, required: true }, // 操作用户 id
+   create_time: { type: String, default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN") }, // 状态变更时间
   },
   { _id: false }
 );
@@ -78,12 +82,12 @@ const MockOrderSehema = new mongoose.Schema<IMockOrder>({
   recipient_postal_code: { type: String },
   order_status_log: { type: [OrderStatusLogSchema], default: [] }, // 订单状态日志
   create_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
   pay_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
 });
 

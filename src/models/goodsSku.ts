@@ -10,8 +10,8 @@ interface IGoodsSku extends mongoose.Document {
   min_normal_price: mongoose.Types.Decimal128; // 最低正常价
   out_sku_sn: string; // 外部SKU编号
   spec?: any[]; // 规格信息（可选）
-  create_time: Date;
-  update_time: Date;
+  create_time: string;
+  update_time: string;
 }
 
 // 定义商品SKU的Schema
@@ -24,12 +24,12 @@ const goodsSkuSchema = new mongoose.Schema<IGoodsSku>({
   out_sku_sn: { type: String, required: false, default: "" },
   spec: { type: [mongoose.Schema.Types.Mixed], default: [] },
   create_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
   update_time: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN"),
   },
 });
 
@@ -48,7 +48,7 @@ goodsSkuSchema.pre("save", async function (next) {
       throw error;
     }
   }
-  this.update_time = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  this.update_time = new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString("zh-CN");
   next();
 });
 

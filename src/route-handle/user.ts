@@ -27,7 +27,7 @@ const generateToken = (userId: number, username: string): string => {
 export const handleLogin = async (
   req: Request,
   res: Response,
-  next: Function
+  next: Function,
 ) => {
   try {
     // 处理登录逻辑
@@ -67,7 +67,7 @@ export const handleLogin = async (
 export const handleLogout = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // 将token存储到redis的黑名单中
   try {
@@ -96,7 +96,7 @@ export const handleLogout = async (
 export const handleGetUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { user } = req as any;
   try {
@@ -168,7 +168,8 @@ export const handleGetUser = async (
     // 递归查找第一个叶子菜单（默认路由），排除路径为 /screen 的菜单
     const findFirstLeafMenu = (nodes: any[]): any | null => {
       for (const node of nodes) {
-        const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+        const hasChildren =
+          Array.isArray(node.children) && node.children.length > 0;
         const isScreenRoute = node.menuPath === "/screen";
 
         if (!hasChildren && !isScreenRoute) {
@@ -191,14 +192,218 @@ export const handleGetUser = async (
     });
     // 找出按钮对应的标识
     const btnAclList = btnList.map((btn) => btn.acl);
+    const defaultBtnAclList = [
+      "Add-Menu",
+      "Add-Auth-Btn-Menu",
+      "Add-Role",
+      "Batch-Delete-Role",
+      "Delete-Role",
+      "Add-User",
+      "Batch-delete-User",
+      "Add-Category",
+      "Edit-Category",
+      "Delete-Category",
+      "Add-Commodity",
+      "Add-Trademark",
+      "Edit-Trademark",
+      "Delete-Trademark",
+      "Edit-Menu",
+      "Delete-Menu",
+      "Assign-Auth-Role",
+      "Edit-Auth-Role",
+      "Delete-Auth-Role",
+      "Assign-Role-User",
+      "Edit-User",
+      "Delete-User",
+      "Edit-Commodity",
+      "View-Sku",
+      "Delete-Commodity",
+      "Edit-Attr",
+      "Open-Order",
+      "Shipment-Order",
+    ];
+    const defaultMenuTree = [
+      {
+        menuName: "仪表盘",
+        menuIcon: "ep-sunrise",
+        menuPath: "/dashboard",
+        acl: "Dashboard",
+        level: 1,
+        parentId: null,
+        isLeaf: false,
+        hasBtnsAcl: false,
+        menuId: 10001,
+        children: [
+          {
+            menuName: "工作台",
+            menuIcon: "ep-data-analysis",
+            menuPath: "/dashboard/workbench",
+            acl: "Workbench",
+            level: 2,
+            parentId: 10001,
+            isLeaf: true,
+            hasBtnsAcl: false,
+            menuId: 10002,
+            children: [],
+          },
+          {
+            menuName: "分析",
+            menuIcon: "ep-histogram",
+            menuPath: "/dashboard/analysis",
+            acl: "Analysis",
+            level: 2,
+            parentId: 10001,
+            isLeaf: true,
+            hasBtnsAcl: false,
+            menuId: 10003,
+            children: [],
+          },
+        ],
+      },
+      {
+        menuName: "权限管理",
+        menuIcon: "ep-lock",
+        menuPath: "/acl",
+        acl: "Acl",
+        level: 1,
+        parentId: null,
+        isLeaf: false,
+        hasBtnsAcl: false,
+        menuId: 10004,
+        children: [
+          {
+            menuName: "用户管理",
+            menuIcon: "ep-user",
+            menuPath: "/acl/user",
+            acl: "User",
+            level: 2,
+            parentId: 10004,
+            isLeaf: true,
+            hasBtnsAcl: true,
+            menuId: 10005,
+            children: [],
+          },
+          {
+            menuName: "角色管理",
+            menuIcon: "ep-avatar",
+            menuPath: "/acl/role",
+            acl: "Role",
+            level: 2,
+            parentId: 10004,
+            isLeaf: true,
+            hasBtnsAcl: true,
+            menuId: 10006,
+            children: [],
+          },
+          {
+            menuName: "菜单管理",
+            menuIcon: "ep-menu",
+            menuPath: "/acl/permission",
+            acl: "Permission",
+            level: 2,
+            parentId: 10004,
+            isLeaf: true,
+            hasBtnsAcl: true,
+            menuId: 10007,
+            children: [],
+          },
+        ],
+      },
+      {
+        menuName: "数据大屏",
+        menuIcon: "ep-monitor",
+        menuPath: "/screen",
+        acl: "Screen",
+        level: 1,
+        parentId: null,
+        isLeaf: true,
+        hasBtnsAcl: false,
+        menuId: 10008,
+        children: [],
+      },
+      {
+        menuName: "商品管理",
+        menuIcon: "ep-goods",
+        menuPath: "/commodity",
+        acl: "Commodity",
+        level: 1,
+        parentId: null,
+        isLeaf: false,
+        hasBtnsAcl: false,
+        menuId: 10009,
+        children: [
+          {
+            menuName: "商品列表",
+            menuIcon: "ep-film",
+            menuPath: "/commodity/commodity-list",
+            acl: "CommodityList",
+            level: 2,
+            parentId: 10009,
+            isLeaf: true,
+            hasBtnsAcl: true,
+            menuId: 10010,
+            children: [],
+          },
+          {
+            menuName: "品牌管理",
+            menuIcon: "ep-suitcase",
+            menuPath: "/commodity/trademark",
+            acl: "Trademark",
+            level: 2,
+            parentId: 10009,
+            isLeaf: true,
+            hasBtnsAcl: true,
+            menuId: 10011,
+            children: [],
+          },
+          {
+            menuName: "分类管理",
+            menuIcon: "ep-wallet",
+            menuPath: "/commodity/category",
+            acl: "Category",
+            level: 2,
+            parentId: 10009,
+            isLeaf: true,
+            hasBtnsAcl: true,
+            menuId: 10012,
+            children: [],
+          },
+        ],
+      },
+      {
+        menuName: "订单管理",
+        menuIcon: "ep-burger",
+        menuPath: "/order",
+        acl: "Order",
+        level: 1,
+        parentId: null,
+        isLeaf: false,
+        hasBtnsAcl: false,
+        menuId: 10013,
+        children: [
+          {
+            menuName: "订单列表",
+            menuIcon: "ep-film",
+            menuPath: "/order/order-list",
+            acl: "OrderList",
+            level: 2,
+            parentId: 10013,
+            isLeaf: true,
+            hasBtnsAcl: true,
+            menuId: 10014,
+            children: [],
+          },
+        ],
+      },
+    ];
     const userInfoData = {
       userId: userInfo.userId,
       username: userInfo.username,
       email: userInfo.email,
-      menuList: menuTree,
-      defaultRoute: firstLeafMenu ? firstLeafMenu.menuPath : '',
-      defaultMenuName: firstLeafMenu ? firstLeafMenu.acl : '',
-      btnAclList,
+      menuList: userInfo.userId === 10000 && menuTree.length <= 0 ? defaultMenuTree : menuTree,
+      defaultRoute: firstLeafMenu ? firstLeafMenu.menuPath : "/dashboard/workbench",
+      defaultMenuName: firstLeafMenu ? firstLeafMenu.acl : "工作台",
+      btnAclList: userInfo.userId === 10000 && btnAclList.length <= 0 ? defaultBtnAclList : btnAclList,
       avatar: userInfo.avatar,
       createTime: userInfo.createTime,
       updateTime: userInfo.updateTime,
@@ -217,7 +422,7 @@ export const handleGetUser = async (
 export const handleGetUserList = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // 获取用户列表
   try {
@@ -265,7 +470,7 @@ export const handleGetUserList = async (
 export const handleAddUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     // 处理新增用户逻辑
@@ -310,7 +515,7 @@ export const handleAddUser = async (
 export const handleUpdateUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // 超级管理员账号——super-admin，2324461523@qq.com不让修改
   const { userId, username, email } = req.body;
@@ -328,7 +533,13 @@ export const handleUpdateUser = async (
     // 更新用户信息
     await User.updateOne(
       { userId },
-      { username, email, updateTime: new Date(Date.now() + 8 * 60 * 60 * 1000) }
+      {
+        username,
+        email,
+        updateTime: new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleString(
+          "zh-CN",
+        ),
+      },
     );
     res.send({
       code: 200,
@@ -344,7 +555,7 @@ export const handleUpdateUser = async (
 export const handleDeleteUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // 超级管理员账号——super-admin，2324461523@qq.com不让删除
   const { userId } = req.params;
@@ -375,14 +586,14 @@ export const handleDeleteUser = async (
 export const handleBatchDeleteUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // 超级管理员账号——super-admin，2324461523@qq.com不让删除
   let userIds = req.body;
   // 找出超级管理员的userId
   const superAdmin = await User.findOne({ email: "2324461523@qq.com" });
   userIds = userIds.filter(
-    (userId: number) => Number(userId) !== superAdmin!.userId
+    (userId: number) => Number(userId) !== superAdmin!.userId,
   );
   // 批量删除用户
   try {
@@ -400,7 +611,7 @@ export const handleBatchDeleteUser = async (
 export const getRoleInfo = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // 获取所有的用户
   try {
@@ -430,14 +641,14 @@ export const getRoleInfo = async (
           .subtract(8, "hour")
           .format("YYYY-MM-DD HH:mm:ss"),
         roleName: item.roleName,
-      })
+      }),
     );
     const role_ids = currentUser.role_ids
       ? currentUser.role_ids.split(",")
       : [];
     // 获取当前用户拥有的角色
     const checkedRoles = allRoles.filter((role) =>
-      role_ids.includes(String(role.id))
+      role_ids.includes(String(role.id)),
     );
     res.send({
       code: 200,
@@ -456,7 +667,7 @@ export const getRoleInfo = async (
 export const assignRoles = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { userId, role_ids } = req.body;

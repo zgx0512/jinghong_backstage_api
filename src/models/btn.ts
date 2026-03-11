@@ -3,7 +3,7 @@
  */
 
 import mongoose from "mongoose";
-
+import dayjs from "dayjs";
 
 // 定义按钮模型接口类型
 interface IBtn extends mongoose.Document {
@@ -12,8 +12,8 @@ interface IBtn extends mongoose.Document {
   acl: string;
   btnIcon: string;
   menuId: number;
-  createTime: Date | string;
-  updateTime: Date | string;
+  createTime: string;
+  updateTime: string;
 }
 
 // 定义按钮模型的Schema
@@ -24,12 +24,12 @@ const btnSchema = new mongoose.Schema<IBtn>({
   btnIcon: { type: String, required: false }, // 按钮图标
   menuId: { type: Number, required: true }, // 所属菜单ID
   createTime: {
-    type: Date,
-    default: new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => dayjs().format("YYYY-MM-DD HH:mm:ss"),
   }, // 创建时间
   updateTime: {
-    type: Date,
-    default: new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: () => dayjs().format("YYYY-MM-DD HH:mm:ss"),
   }, // 更新时间
 });
 

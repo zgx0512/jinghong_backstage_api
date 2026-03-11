@@ -4,6 +4,7 @@
 import mongoose from "mongoose";
 // 引入计数器
 import { getNextSequence } from "./counter";
+import dayjs from "dayjs";
 
 // 定义角色模型的类型
 export interface IRole extends mongoose.Document {
@@ -11,8 +12,8 @@ export interface IRole extends mongoose.Document {
   roleName: string;
   permissions: number[];
   role_ids: number[];
-  createTime: Date;
-  updateTime: Date;
+  createTime: string;
+  updateTime: string;
 }
 
 // 定义角色模型的schema
@@ -22,12 +23,12 @@ export const roleSchema = new mongoose.Schema<IRole>({
   permissions: { type: [Number], default: [] },
   role_ids: { type: [Number], default: [] },
   createTime: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: dayjs().format("YYYY-MM-DD HH:mm:ss"),
   },
   updateTime: {
-    type: Date,
-    default: () => new Date(Date.now() + 8 * 60 * 60 * 1000),
+    type: String,
+    default: dayjs().format("YYYY-MM-DD HH:mm:ss"),
   },
 });
 

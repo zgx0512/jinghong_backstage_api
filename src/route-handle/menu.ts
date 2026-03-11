@@ -29,12 +29,8 @@ export const getMenuList = async (req: Request, res: Response) => {
           level: menu.level,
           isLeaf: menu.isLeaf,
           hasBtnsAcl: menu.hasBtnsAcl,
-          createTime: dayjs(menu.createTime)
-            .subtract(8, "hour")
-            .format("YYYY-MM-DD HH:mm:ss"),
-          updateTime: dayjs(menu.updateTime)
-            .subtract(8, "hour")
-            .format("YYYY-MM-DD HH:mm:ss"),
+          createTime: menu.createTime,
+          updateTime: menu.updateTime,
           children: buildMenuTree(menu.menuId),
         };
         if (type === "0") {
@@ -48,12 +44,8 @@ export const getMenuList = async (req: Request, res: Response) => {
               acl: btn.acl,
               icon: btn.btnIcon,
               parentId: btn.menuId,
-              createTime: dayjs(menu.createTime)
-                .subtract(8, "hour")
-                .format("YYYY-MM-DD HH:mm:ss"),
-              updateTime: dayjs(menu.updateTime)
-                .subtract(8, "hour")
-                .format("YYYY-MM-DD HH:mm:ss"),
+              createTime: btn.createTime,
+              updateTime: btn.updateTime,
             }));
             if (res.length > 0) {
               treeNodes.children = res;
@@ -187,8 +179,8 @@ export const updateMenu = async (req: Request, res: Response) => {
         menuPath: path,
         level,
         acl,
-        updateTime: new Date(Date.now() + 8 * 60 * 60 * 1000),
-      }
+        updateTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+      },
     );
     res.send({
       code: 200,
