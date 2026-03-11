@@ -70,7 +70,6 @@ export const getOrderList = async (
         filter.create_time = { $gte: startDateFilter, $lte: endDateFilter };
       }
     }
-    console.log("filter", filter);
 
     if (pay_time) {
       const [rawStart, rawEnd] = String(pay_time).split(",");
