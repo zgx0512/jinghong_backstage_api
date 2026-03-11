@@ -2,6 +2,7 @@ import { createClient } from "redis";
 
 const redisClient = createClient({
   url: process.env.REDIS_URL as string,
+  password: process.env.REDIS_PASSWORD, // 添加密码配置
 });
 
 redisClient.connect().catch(console.error);

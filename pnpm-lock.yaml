@@ -53,6 +53,9 @@ importers:
       multer:
         specifier: ^2.0.0
         version: 2.0.0
+      pnpm:
+        specifier: ^10.31.0
+        version: 10.31.0
       redis:
         specifier: ^4.7.0
         version: 4.7.1
@@ -1068,6 +1071,11 @@ packages:
   picomatch@2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
+
+  pnpm@10.31.0:
+    resolution: {integrity: sha512-45JziL+qgHjOt5t0j/wegnToTXUWPme8IuBsDTrtQ90VMVHL8R1/gwH/SsuYxovcXK32mJUygB/6/js+SmPCaA==}
+    engines: {node: '>=18.12'}
+    hasBin: true
 
   process-nextick-args@2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
@@ -2733,6 +2741,8 @@ snapshots:
   path-to-regexp@0.1.12: {}
 
   picomatch@2.3.1: {}
+
+  pnpm@10.31.0: {}
 
   process-nextick-args@2.0.1: {}
 
