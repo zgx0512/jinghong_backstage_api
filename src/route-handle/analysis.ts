@@ -6,10 +6,9 @@ import redisClient from "../config/redis";
 
 // 类型定义
 interface DateRange {
-  start: Date;
-  end: Date;
   startStr: string;
   endStr: string;
+  endDate?: Date;
 }
 
 interface PeriodData {
@@ -65,12 +64,12 @@ interface OverviewResponse {
  * 获取指定日期范围的数据
  */
 async function getPeriodData(dateRange: DateRange): Promise<PeriodData> {
-  const { start, end } = dateRange;
+  const { startStr, endStr } = dateRange;
 
   const orders = await MockOrder.find({
     pay_time: {
-      $gte: start,
-      $lte: end,
+      $gte: startStr,
+      $lte: endStr,
     },
   })
     .sort({ create_time: -1 })
@@ -79,11 +78,11 @@ async function getPeriodData(dateRange: DateRange): Promise<PeriodData> {
   const totalOrders = orders.length;
   const totalAmount = orders.reduce(
     (sum, order) => sum + order.min_group_price,
-    0
+    0,
   );
 
   const refundOrders = orders.filter(
-    (order) => order.order_status === 4
+    (order) => order.order_status === 4,
   ).length;
   const refundAmount = orders
     .filter((order) => order.order_status === 4)
@@ -123,31 +122,31 @@ function calculateGrowthRate(current: number, previous: number): number {
  */
 function calculateAllGrowthRates(
   current: PeriodData,
-  previous: PeriodData
+  previous: PeriodData,
 ): GrowthRates {
   return {
     orderCnt: calculateGrowthRate(current.totalOrders, previous.totalOrders),
     orderAmount: calculateGrowthRate(current.totalAmount, previous.totalAmount),
     avgOrderPrice: calculateGrowthRate(
       current.avgOrderPrice,
-      previous.avgOrderPrice
+      previous.avgOrderPrice,
     ),
     refundOrders: calculateGrowthRate(
       current.refundOrders,
-      previous.refundOrders
+      previous.refundOrders,
     ),
     refundAmount: calculateGrowthRate(
       current.refundAmount,
-      previous.refundAmount
+      previous.refundAmount,
     ),
     refundRate: calculateGrowthRate(current.refundRate, previous.refundRate),
     successOrders: calculateGrowthRate(
       current.successOrders,
-      previous.successOrders
+      previous.successOrders,
     ),
     successAmount: calculateGrowthRate(
       current.successAmount,
-      previous.successAmount
+      previous.successAmount,
     ),
   };
 }
@@ -157,7 +156,7 @@ function calculateAllGrowthRates(
  */
 function validateDateParams(
   startDateStr?: string,
-  endDateStr?: string
+  endDateStr?: string,
 ): string | null {
   if (!startDateStr || !endDateStr) {
     return "时间不能为空";
@@ -203,11 +202,12 @@ function setDateBoundaries(date: Date, isStart: boolean): Date {
  */
 function getPreviousPeriod(
   startDateStr: string,
-  endDateStr: string
+  endDateStr: string,
+  timeStr: string
 ): DateRange {
   const startDate = new Date(startDateStr);
   const endDate = new Date(endDateStr);
-
+  console.log("timeStr", timeStr);
   // 计算当前周期天数（包括开始和结束日）
   const daysInPeriod =
     Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) +
@@ -220,20 +220,30 @@ function getPreviousPeriod(
   // 计算上一个周期的开始日期
   const prevStart = new Date(prevEnd);
   prevStart.setDate(prevStart.getDate() - daysInPeriod + 1);
-
   return {
-    start: setDateBoundaries(prevStart, true),
-    end: setDateBoundaries(prevEnd, false),
-    startStr: prevStart.toISOString().split("T")[0],
-    endStr: prevEnd.toISOString().split("T")[0],
+    startStr: dayjs(prevStart).format("YYYY-MM-DD"),
+    endStr: `${dayjs(prevEnd).format("YYYY-MM-DD")} ${timeStr}`,
   };
+}
+
+function isToday(dateStr: string) {
+  // 解析输入日期
+  const inputDate = new Date(dateStr);
+  inputDate.setHours(0, 0, 0, 0); // 重置时间为午夜
+
+  // 获取今天日期
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 比较时间戳
+  return inputDate.getTime() === today.getTime();
 }
 
 // 数据概览方法
 export const getDataOverview = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { start_date, end_date } = req.query;
 
@@ -241,7 +251,7 @@ export const getDataOverview = async (
     // 验证参数
     const validationError = validateDateParams(
       start_date as string,
-      end_date as string
+      end_date as string,
     );
 
     if (validationError) {
@@ -252,19 +262,24 @@ export const getDataOverview = async (
       });
       return;
     }
-
     const startDateStr = start_date as string;
     const endDateStr = end_date as string;
+    const endDate = new Date(endDateStr);
+    let endStr = "";
+    // 如果结束日期是当天，则结束应该取当前时间
+    if (isToday(endDateStr)) {
+      endStr = dayjs().format("YYYY-MM-DD HH:mm:ss");
+    } else {
+      endStr = dayjs(endDate).endOf("day").format("YYYY-MM-DD HH:mm:ss");
+    }
 
     // 准备当前周期和上一个周期的时间范围
     const currentPeriod: DateRange = {
-      start: setDateBoundaries(new Date(startDateStr), true),
-      end: setDateBoundaries(new Date(endDateStr), false),
       startStr: startDateStr,
-      endStr: endDateStr,
+      endStr,
     };
 
-    const previousPeriod = getPreviousPeriod(startDateStr, endDateStr);
+    const previousPeriod = getPreviousPeriod(startDateStr, endDateStr, endStr.split(" ")[1]);
 
     // 并行查询两个周期的数据
     const [currentData, previousData] = await Promise.all([
@@ -312,14 +327,14 @@ export const getDataOverview = async (
 export const getTrendAnalysis = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { start_date, end_date } = req.query;
     // 验证参数
     const validationError = validateDateParams(
       start_date as string,
-      end_date as string
+      end_date as string,
     );
 
     if (validationError) {
@@ -623,14 +638,14 @@ export const getTrendAnalysis = async (
 export const getCategorySales = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { start_date, end_date } = req.query;
     // 验证参数
     const validationError = validateDateParams(
       start_date as string,
-      end_date as string
+      end_date as string,
     );
 
     if (validationError) {
@@ -691,7 +706,7 @@ export const getCategorySales = async (
 export const getRealTimeData = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     // 获取用户id
@@ -734,7 +749,7 @@ export const getRealTimeData = async (
         .reduce((acc, item) => {
           return acc + item.min_group_price;
         }, 0)
-        .toFixed(2)
+        .toFixed(2),
     );
     // 实时退款订单列表
     const refund_order_list =
@@ -746,15 +761,15 @@ export const getRealTimeData = async (
         .reduce((acc, item) => {
           return acc + item.min_group_price;
         }, 0)
-        .toFixed(2)
+        .toFixed(2),
     );
     // 实时平均客单价
     const today_avg_order_price = Number(
-      (today_order_amount / today_order_cnt).toFixed(2)
+      (today_order_amount / today_order_cnt).toFixed(2),
     );
     // 实时退款率
     const today_refund_rate = Number(
-      (today_refund_order_cnt / today_order_cnt).toFixed(2)
+      (today_refund_order_cnt / today_order_cnt).toFixed(2),
     );
     // 获取订单商品销量统计数据
     const orderProductData = await MockOrder.aggregate([

@@ -233,7 +233,7 @@ async function insertHourlyOrders() {
     // 获取当前小时的开始时间
     const now = new Date();
     // 转换为东八区时间
-    const startOfHour = new Date(now.getTime());
+    const startOfHour = new Date(now.getTime() + 8 * 60 * 60 * 1000);
     startOfHour.setMinutes(0, 0, 0); // 设置为整点，秒和毫秒为0
 
     const endOfHour = new Date(startOfHour);
