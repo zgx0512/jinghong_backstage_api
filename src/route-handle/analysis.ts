@@ -690,8 +690,8 @@ export const getCategorySales = async (
       {
         $match: {
           pay_time: {
-            $gte: setDateBoundaries(new Date(start_date as string), true),
-            $lte: setDateBoundaries(new Date(end_date as string), false),
+            $gte: start_date as string,
+            $lte: dayjs(end_date as string).endOf("day").format("YYYY-MM-DD HH:mm:ss"),
           },
         },
       },
