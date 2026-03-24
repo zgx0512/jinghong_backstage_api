@@ -233,7 +233,7 @@ async function insertHourlyOrders() {
     // 获取当前小时的开始时间
     const now = new Date();
     // 转换为东八区时间
-    const startOfHour = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    const startOfHour = new Date(now.getTime());
     startOfHour.setMinutes(0, 0, 0); // 设置为整点，秒和毫秒为0
 
     const endOfHour = new Date(startOfHour);
@@ -241,7 +241,7 @@ async function insertHourlyOrders() {
 
     const orderCount = Math.floor(Math.random() * 16) + 5; // 5-20个订单
     console.log(
-      `正在生成从 ${startOfHour.toISOString()} 到 ${endOfHour.toISOString()} 的 ${orderCount} 条订单...`,
+      `正在生成从 ${dayjs(startOfHour).format("YYYY-MM-DD HH:mm:ss")} 到 ${dayjs(startOfHour).format("YYYY-MM-DD HH:mm:ss")} 的 ${orderCount} 条订单...`,
     );
 
     const orders = [];
@@ -262,7 +262,7 @@ async function insertHourlyOrders() {
       const userId = Math.floor(Math.random() * 1000) + 1;
       const order = generateRandomOrder(randomTime, userId);
       orders.push(order);
-    }   
+    }
 
     // 使用循环调用create方法，确保pre钩子被触发生成订单号
     for (const order of orders) {
@@ -270,7 +270,7 @@ async function insertHourlyOrders() {
     }
 
     console.log(
-      `已插入 ${startOfHour.toISOString()} 这一小时的 ${orders.length} 条订单`,
+      `已插入 ${dayjs(startOfHour).format("YYYY-MM-DD HH:mm:ss")} 这一小时的 ${orders.length} 条订单`,
     );
   } catch (error) {
     console.error("插入小时订单数据时发生错误:", error);

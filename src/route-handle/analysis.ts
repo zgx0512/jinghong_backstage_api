@@ -203,7 +203,7 @@ function setDateBoundaries(date: Date, isStart: boolean): Date {
 function getPreviousPeriod(
   startDateStr: string,
   endDateStr: string,
-  timeStr: string
+  timeStr: string,
 ): DateRange {
   const startDate = new Date(startDateStr);
   const endDate = new Date(endDateStr);
@@ -279,7 +279,11 @@ export const getDataOverview = async (
       endStr,
     };
 
-    const previousPeriod = getPreviousPeriod(startDateStr, endDateStr, endStr.split(" ")[1]);
+    const previousPeriod = getPreviousPeriod(
+      startDateStr,
+      endDateStr,
+      endStr.split(" ")[1],
+    );
 
     // 并行查询两个周期的数据
     const [currentData, previousData] = await Promise.all([
@@ -353,18 +357,31 @@ export const getTrendAnalysis = async (
         {
           $match: {
             pay_time: {
-              $gte: setDateBoundaries(new Date(start_date as string), true),
-              $lte: setDateBoundaries(new Date(end_date as string), false),
+              $gte: start_date as string,
+              $lte: dayjs(end_date as string)
+                .endOf("day")
+                .format("YYYY-MM-DD HH:mm:ss"),
+            },
+          },
+        },
+        {
+          $addFields: {
+            converted_pay_time: {
+              $cond: {
+                if: { $ne: ["$pay_time", null] },
+                then: { $toDate: "$pay_time" },
+                else: null,
+              },
             },
           },
         },
         {
           $group: {
             _id: {
-              year: { $year: { date: "$pay_time", timezone: "+08:00" } },
-              month: { $month: { date: "$pay_time", timezone: "+08:00" } },
-              day: { $dayOfMonth: { date: "$pay_time", timezone: "+08:00" } },
-              hour: { $hour: { date: "$pay_time", timezone: "+08:00" } },
+              year: { $year: { date: "$converted_pay_time" } },
+              month: { $month: { date: "$converted_pay_time" } },
+              day: { $dayOfMonth: { date: "$converted_pay_time" } },
+              hour: { $hour: { date: "$converted_pay_time" } },
             },
             order_cnt: { $sum: 1 },
             order_amount: { $sum: "$min_group_price" },
@@ -495,17 +512,30 @@ export const getTrendAnalysis = async (
         {
           $match: {
             pay_time: {
-              $gte: setDateBoundaries(new Date(start_date as string), true),
-              $lte: setDateBoundaries(new Date(end_date as string), false),
+              $gte: start_date as string,
+              $lte: dayjs(end_date as string)
+                .endOf("day")
+                .format("YYYY-MM-DD HH:mm:ss"),
+            },
+          },
+        },
+        {
+          $addFields: {
+            converted_pay_time: {
+              $cond: {
+                if: { $ne: ["$pay_time", null] },
+                then: { $toDate: "$pay_time" },
+                else: null,
+              },
             },
           },
         },
         {
           $group: {
             _id: {
-              year: { $year: { date: "$pay_time", timezone: "+08:00" } },
-              month: { $month: { date: "$pay_time", timezone: "+08:00" } },
-              day: { $dayOfMonth: { date: "$pay_time", timezone: "+08:00" } },
+              year: { $year: { date: "$converted_pay_time" } },
+              month: { $month: { date: "$converted_pay_time" } },
+              day: { $dayOfMonth: { date: "$converted_pay_time" } },
             },
             order_cnt: { $sum: 1 },
             order_amount: { $sum: "$min_group_price" },
