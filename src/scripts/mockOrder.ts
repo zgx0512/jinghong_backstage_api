@@ -241,7 +241,7 @@ async function insertHourlyOrders() {
 
     const orderCount = Math.floor(Math.random() * 16) + 5; // 5-20个订单
     console.log(
-      `正在生成从 ${dayjs(startOfHour).format("YYYY-MM-DD HH:mm:ss")} 到 ${dayjs(startOfHour).format("YYYY-MM-DD HH:mm:ss")} 的 ${orderCount} 条订单...`,
+      `正在生成从 ${dayjs(startOfHour).format("YYYY-MM-DD HH:mm:ss")} 到 ${dayjs(endOfHour).format("YYYY-MM-DD HH:mm:ss")} 的 ${orderCount} 条订单...`,
     );
 
     const orders = [];

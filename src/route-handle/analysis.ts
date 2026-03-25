@@ -745,20 +745,20 @@ export const getRealTimeData = async (
     const redisKey = `user:${userId}:realTimeData`;
     // 检查用户是否在5分钟内已请求过
     const lastRequestTime = await redisClient.get(redisKey);
-    if (lastRequestTime) {
-      const currentTime = Date.now();
-      const timeDiff = currentTime - parseInt(lastRequestTime);
-      const fiveMinutes = 5 * 60 * 1000; // 5分钟的毫秒数
+    // if (lastRequestTime) {
+    //   const currentTime = Date.now();
+    //   const timeDiff = currentTime - parseInt(lastRequestTime);
+    //   const fiveMinutes = 5 * 60 * 1000; // 5分钟的毫秒数
 
-      if (timeDiff < fiveMinutes) {
-        res.send({
-          code: 429,
-          data: null,
-          message: "请求过于频繁，请稍后再试",
-        });
-        return;
-      }
-    }
+    //   if (timeDiff < fiveMinutes) {
+    //     res.send({
+    //       code: 429,
+    //       data: null,
+    //       message: "请求过于频繁，请稍后再试",
+    //     });
+    //     return;
+    //   }
+    // }
     // 获取当前时间
     const now = dayjs();
     const start_date = now.format("YYYY-MM-DD");
@@ -767,8 +767,8 @@ export const getRealTimeData = async (
     const realTimeOrderData =
       (await MockOrder.find({
         pay_time: {
-          $gte: setDateBoundaries(new Date(start_date), true),
-          $lte: new Date(end_date),
+          $gte: start_date,
+          $lte: end_date,
         },
       }).lean()) || [];
     // 实时订单
@@ -806,8 +806,8 @@ export const getRealTimeData = async (
       {
         $match: {
           pay_time: {
-            $gte: setDateBoundaries(new Date(start_date), true),
-            $lte: new Date(end_date),
+            $gte: start_date,
+            $lte: end_date,
           },
           order_status: { $ne: 4 }, // 排除已取消的订单
         },
