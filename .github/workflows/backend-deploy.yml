@@ -1,0 +1,55 @@
+name: 后端自动部署
+
+on:
+  push:
+    branches:
+      - master  # 改成你的默认分支
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+
+      - name: 安装 pnpm
+        run: npm install -g pnpm
+
+      - name: 安装依赖
+        run: pnpm install  # 如果用 npm 则改成 npm ci
+
+      - name: 打包代码（排除 node_modules）
+        run: |
+          tar --exclude='node_modules' --exclude='.git' -czf backend.tar.gz .
+
+      - name: 上传到服务器
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "backend.tar.gz"
+          target: "/opt/jinghong_backstage_api/"
+          strip_components: 0
+
+      - name: 远程更新并重启
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/jinghong_backstage_api
+            tar -xzf backend.tar.gz
+            rm backend.tar.gz
+            npm install --production
+            pm2 restart jinghong-api
+            pm2 restart mock-order
+            echo "✅ 后端部署完成"
